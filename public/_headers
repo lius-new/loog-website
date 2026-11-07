@@ -1,0 +1,5 @@
+# Cloudflare Pages response headers (Astro copies this file into dist/).
+# Everything under /_astro/ has a content hash in its file name, so it can be cached for a year.
+# No rule is set for the HTML page, so it keeps the host's default caching.
+/_astro/*
+  Cache-Control: public, max-age=31536000, immutable

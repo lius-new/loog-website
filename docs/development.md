@@ -109,10 +109,28 @@ and Material Icon Theme is MIT (Copyright (c) 2025 Material Extensions). Not yet
 the underlying Codicons and Lucide sets (Codicons are, to my knowledge, CC BY 4.0, which requires attribution;
 Lucide is ISC). Check upstream and add the notices before launch.
 
+## Deployment
+
+The site is static, so any static host works; the plan is [Cloudflare Pages](https://pages.cloudflare.com/)
+connected to this repository. Settings:
+
+| Setting           | Value        |
+| ----------------- | ------------ |
+| Framework preset  | Astro        |
+| Build command     | `pnpm build` |
+| Output directory  | `dist`       |
+
+- `.node-version` pins Node 24.13.0 for the build (the project needs 22.23.4 or newer, and `engines` is not
+  something the host reads). If the build fails on the package manager, set `PNPM_VERSION` to the version
+  that wrote `pnpm-lock.yaml` (10.28.1).
+- `public/_headers` makes the content-hashed files under `/_astro/` cacheable for a year.
+- Once the domain is known, set `site` in `astro.config.mjs` and add absolute URLs and a share image to the
+  Open Graph tags in `Base.astro`.
+
 ## Status
 
 - The first screen is complete on desktop, tablet and phone widths.
 - The Download button links to the latest GitHub release. It always reads "Download for Windows": OS
   detection and per-platform links are not implemented yet.
 - No licence has been chosen for this repository.
-- No deployment is configured (`astro.config.mjs` has no `site`).
+- Deployment is prepared but not connected yet (`astro.config.mjs` has no `site`).
