@@ -8,7 +8,7 @@ export const SITE = {
   seoTitle: 'Loog — A fast code editor with a built-in terminal and Git',
   /** 搜索结果里的摘要:约 155 个字符以内 */
   description:
-    'Loog is a fast, open-source code editor for Windows, macOS and Linux. Written in Rust, with a built-in terminal, Git and language servers.',
+    'Loog is a fast, open-source code editor written in Rust: an alternative to VS Code and Zed, with a built-in terminal, Git and language servers.',
   repo: 'https://github.com/lius-new/loog',
   /** 分享图(public/og.png),1200×630 */
   shareImage: { path: '/og.png', width: 1200, height: 630, alt: 'Loog: a dot-matrix wordmark above a code editor window with a commit diff and a terminal' },
