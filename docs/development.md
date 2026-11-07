@@ -111,18 +111,22 @@ Lucide is ISC). Check upstream and add the notices before launch.
 
 ## Deployment
 
-The site is static, so any static host works; the plan is [Cloudflare Pages](https://pages.cloudflare.com/)
-connected to this repository. Settings:
+The site is static, so any static host works. It is set up for Cloudflare's Workers static-assets flow
+(Workers & Pages, connect to Git): the deploy step just uploads `dist/`, with no Worker code. Settings in the
+dashboard:
 
-| Setting           | Value        |
-| ----------------- | ------------ |
-| Framework preset  | Astro        |
-| Build command     | `pnpm build` |
-| Output directory  | `dist`       |
+| Setting         | Value                 |
+| --------------- | --------------------- |
+| Project name    | `loog-website` (must match `name` in `wrangler.jsonc`, or the build fails) |
+| Build command   | `pnpm run build`      |
+| Deploy command  | `npx wrangler deploy` (the default) |
 
-- `.node-version` pins Node 24.13.0 for the build (the project needs 22.23.4 or newer, and `engines` is not
-  something the host reads). If the build fails on the package manager, set `PNPM_VERSION` to the version
-  that wrote `pnpm-lock.yaml` (10.28.1).
+- `wrangler.jsonc` says where the files are (`assets.directory: ./dist`). `npx wrangler deploy --dry-run`
+  validates it locally without uploading anything.
+- `.node-version` is `24`, which the build image resolves to its preinstalled Node 24.x. Use a major version:
+  the project needs 22.23.4 or newer, `engines` is not read by the host, and the preinstalled Node 22 may be
+  older than that. If the build fails on the package manager, set `PNPM_VERSION` to the version that wrote
+  `pnpm-lock.yaml` (10.28.1).
 - `public/_headers` makes the content-hashed files under `/_astro/` cacheable for a year.
 - Once the domain is known, set `site` in `astro.config.mjs` and add absolute URLs and a share image to the
   Open Graph tags in `Base.astro`.

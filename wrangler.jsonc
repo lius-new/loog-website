@@ -1,0 +1,9 @@
+// Cloudflare Workers static-assets deployment: serve the pre-rendered site in dist/ (no Worker code).
+// "name" must match the project name in the Cloudflare dashboard, otherwise the Git build fails.
+{
+  "name": "loog-website",
+  "compatibility_date": "2026-10-01",
+  "assets": {
+    "directory": "./dist"
+  }
+}
