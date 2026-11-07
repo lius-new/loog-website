@@ -4,9 +4,14 @@ export const SITE = {
   name: 'Loog',
   tagline: 'Edit, run, commit.',
   subtitle: 'A fast, minimal code editor.',
+  /** 搜索结果里的标题:品牌名在前,约 60 个字符以内 */
+  seoTitle: 'Loog — A fast code editor with a built-in terminal and Git',
+  /** 搜索结果里的摘要:约 155 个字符以内 */
   description:
-    'Loog is a fast, minimal code editor for Windows, macOS and Linux, with an integrated terminal and Git. Written in Rust.',
+    'Loog is a fast, open-source code editor for Windows, macOS and Linux. Written in Rust, with a built-in terminal, Git and language servers.',
   repo: 'https://github.com/lius-new/loog',
+  /** 分享图(public/og.png),1200×630 */
+  shareImage: { path: '/og.png', width: 1200, height: 630, alt: 'Loog: a dot-matrix wordmark above a code editor window with a commit diff and a terminal' },
 } as const;
 
 export const URLS = {

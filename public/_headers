@@ -1,5 +1,20 @@
-# Cloudflare Pages response headers (Astro copies this file into dist/).
-# Everything under /_astro/ has a content hash in its file name, so it can be cached for a year.
-# No rule is set for the HTML page, so it keeps the host's default caching.
+# Cloudflare response headers (Astro copies this file into dist/).
+#
+# /_astro/* has a content hash in every file name, so it can be cached for a year.
+# The files below keep a fixed name, so their cache time is a trade-off: after a change,
+# visitors may keep the old copy until it expires. They are set to a moderate time.
+
 /_astro/*
   Cache-Control: public, max-age=31536000, immutable
+
+# The page: 10 minutes in the browser, then up to a day served from cache while it refreshes.
+/
+  Cache-Control: public, max-age=600, stale-while-revalidate=86400
+
+# Icons and the share image rarely change.
+/favicon.svg
+  Cache-Control: public, max-age=2592000
+/favicon.ico
+  Cache-Control: public, max-age=2592000
+/og.png
+  Cache-Control: public, max-age=604800

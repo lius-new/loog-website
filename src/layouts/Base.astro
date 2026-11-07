@@ -13,13 +13,50 @@ import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/brico
 import geistMonoLatin from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url';
 
 import Sprite from '../components/Sprite.astro';
-import { SITE } from '../data/site';
+import { SITE, URLS } from '../data/site';
 
 interface Props {
   title?: string;
   description?: string;
 }
-const { title = `${SITE.name} — ${SITE.subtitle}`, description = SITE.description } = Astro.props;
+const { title = SITE.seoTitle, description = SITE.description } = Astro.props;
+
+// 规范地址:站点域名(astro.config.mjs 的 site)+ 当前路径
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const origin = new URL('/', Astro.site).href;
+const image = new URL(SITE.shareImage.path, Astro.site).href;
+
+// 结构化数据:告诉搜索引擎"这是一个站点,它介绍的是一款免费、开源的桌面开发者软件"。
+// 不包含评分、评论、版本号:没有真实数据,也不想让版本号过期。
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${origin}#website`,
+      url: origin,
+      name: SITE.name,
+      description,
+      inLanguage: 'en',
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${origin}#app`,
+      name: SITE.name,
+      url: origin,
+      description,
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Windows, macOS, Linux',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      license: ['https://www.apache.org/licenses/LICENSE-2.0', 'https://opensource.org/license/mit'],
+      downloadUrl: URLS.releases,
+      image,
+      sameAs: [SITE.repo],
+      isPartOf: { '@id': `${origin}#website` },
+    },
+  ],
+};
 ---
 
 <!doctype html>
@@ -31,14 +68,28 @@ const { title = `${SITE.name} — ${SITE.subtitle}`, description = SITE.descript
     <meta name="description" content={description} />
     <meta name="theme-color" content="#1c1a17" />
     <meta name="generator" content={Astro.generator} />
+    <link rel="canonical" href={canonical} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
     <link rel="preload" as="font" type="font/woff2" href={bricolageLatin} crossorigin />
     <link rel="preload" as="font" type="font/woff2" href={geistMonoLatin} crossorigin />
+    <meta name="robots" content="index, follow, max-image-preview:large" />
     <meta property="og:type" content="website" />
+    <meta property="og:url" content={canonical} />
     <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:locale" content="en_US" />
     <meta property="og:title" content={title} />
     <meta property="og:description" content={description} />
+    <meta property="og:image" content={image} />
+    <meta property="og:image:width" content={String(SITE.shareImage.width)} />
+    <meta property="og:image:height" content={String(SITE.shareImage.height)} />
+    <meta property="og:image:alt" content={SITE.shareImage.alt} />
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content={title} />
+    <meta name="twitter:description" content={description} />
+    <meta name="twitter:image" content={image} />
+    <meta name="twitter:image:alt" content={SITE.shareImage.alt} />
+    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
   </head>
   <body>
     <Sprite />

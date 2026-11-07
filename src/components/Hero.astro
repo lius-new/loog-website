@@ -8,7 +8,8 @@ import { SITE } from '../data/site';
 ---
 
 <div class="hero" id="hero">
-  <h1 class="sr">{SITE.name}</h1>
+  <!-- 画布上的点阵字标就是视觉上的标题;这里给读屏和搜索引擎一个完整的文字版 -->
+  <h1 class="sr">{SITE.name}: {SITE.subtitle}</h1>
   <canvas id="field" aria-hidden="true"></canvas>
 
   <div class="stage" id="stage">

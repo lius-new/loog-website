@@ -127,9 +127,33 @@ dashboard:
   the project needs 22.23.4 or newer, `engines` is not read by the host, and the preinstalled Node 22 may be
   older than that. If the build fails on the package manager, set `PNPM_VERSION` to the version that wrote
   `pnpm-lock.yaml` (10.28.1).
-- `public/_headers` makes the content-hashed files under `/_astro/` cacheable for a year.
-- Once the domain is known, set `site` in `astro.config.mjs` and add absolute URLs and a share image to the
-  Open Graph tags in `Base.astro`.
+- `public/_headers` sets cache times: a year for the content-hashed files under `/_astro/`, 10 minutes plus
+  `stale-while-revalidate` for the page, 30 days for the favicons and 7 days for `og.png`. The files with fixed
+  names are shorter on purpose: after a change, visitors keep the old copy until it expires.
+- The site is live at <https://loog.dev>, added under the Worker's **Custom Domains and Routes**. `site` in
+  `astro.config.mjs` is the same address; `Base.astro` uses it for the canonical link and `og:url`.
+  Pushing to `main` redeploys automatically.
+
+## SEO
+
+- **Search-result copy** lives in `src/data/site.ts`: `seoTitle` (brand first, about 60 characters) and
+  `description` (about 155 characters or fewer). `Base.astro` uses them for `<title>`, the description, Open
+  Graph and the Twitter card.
+- **Structured data** (`Base.astro`): a JSON-LD graph with a `WebSite` and a free `SoftwareApplication`
+  (category, operating systems, licences, download URL). It deliberately has no rating, review or version
+  number: there is no real data for the first two, and a version would go stale.
+- **Share image**: `public/og.png`, 1200×630, shown when the link is shared. It is a screenshot of the first
+  screen: lay the page out at 1500×788 in headless Chrome and capture it at a device scale of 0.8, with
+  `?static` so the canvas intro is skipped. The declared size in `site.ts` must match the file. Regenerate it
+  when the first screen's design changes.
+- **`public/robots.txt` and `public/sitemap.xml`**. The sitemap is written by hand because the site has one
+  page; add a `<url>` when you add a page. Cloudflare's "managed robots.txt" feature may add its own header to
+  the served `robots.txt`.
+- **One `<h1>`** (visually hidden, "Loog: A fast, minimal code editor.") says what the page is. The wordmark on
+  the canvas is the visual title.
+- **Not code, but it matters most:** register the site in Google Search Console and Bing Webmaster Tools and
+  submit the sitemap, link to `loog.dev` from the Loog repository (its Website field and README), and earn
+  links from places developers read.
 
 ## Status
 
@@ -137,4 +161,5 @@ dashboard:
 - The Download button links to the latest GitHub release. It always reads "Download for Windows": OS
   detection and per-platform links are not implemented yet.
 - No licence has been chosen for this repository.
-- Deployment is prepared but not connected yet (`astro.config.mjs` has no `site`).
+- Deployed on Cloudflare at <https://loog.dev>, with a share image, sitemap, `robots.txt` and structured data.
+- English only: there is no Chinese version or `hreflang` yet.
