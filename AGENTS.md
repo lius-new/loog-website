@@ -9,6 +9,11 @@ See [docs/development.md](docs/development.md) for the layout and design notes (
 - Nothing above the fold may change size while the page loads. `--wm-bottom` is pure CSS and depends on the constant
   `--wm-em` (tokens.css); re-measure `--wm-em` if the wordmark's font, weight or letter-spacing changes (see docs/development.md).
   Do not write layout-affecting custom properties from scripts that wait for fonts.
+- Extension data comes from the signed index in the extension repository, read at build time (`src/data/extensions.ts`).
+  Never copy extension names, descriptions or versions into this repository.
+- The home page and the extensions pages must not import the same CSS module: the build would turn it into a shared chunk
+  and the home page would get an extra render-blocking stylesheet. `extensions.css` pulls in fonts, tokens and base with
+  `@import`. After changing layouts, `dist/_astro` should still contain one `index.*.css`.
 - Before finishing a change, run `pnpm build` and `pnpm typecheck`. `.astro` files are not covered by `typecheck`.
 - The page is checked against its design by screenshots at 1440, 1800, 2000 (desktop), 800 (tablet) and 390 (phone) widths.
   `?static` and `?t=<seconds>` freeze the canvas intro so screenshots are deterministic.

@@ -11,7 +11,7 @@
 <p align="center">
   <a href="https://github.com/lius-new/loog/releases/latest">Download</a> ·
   <a href="https://github.com/lius-new/loog/tree/main/docs">Documentation</a> ·
-  <a href="https://github.com/lius-new/loog/blob/main/docs/extensions-roadmap.md">Extensions</a> ·
+  <a href="https://loog.dev/extensions/">Extensions</a> ·
   <a href="https://github.com/lius-new/loog">GitHub</a>
 </p>
 

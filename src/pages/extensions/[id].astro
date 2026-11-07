@@ -1,0 +1,159 @@
+---
+// 单个扩展的详情页 /extensions/<id>/:Details(README)、Contributions、Changelog 三个标签,右侧是详细信息。
+// 每个扩展一个静态页面,构建时生成;Install 按钮通过 loog:// 协议交给应用安装。
+import type { GetStaticPaths } from 'astro';
+import ExtLayout from '../../layouts/ExtLayout.astro';
+import { EXTENSIONS, URLS } from '../../data/site';
+import { contributionsOf, extensionPath, getExtensions, type Extension } from '../../data/extensions';
+
+export const getStaticPaths = (async () => {
+  const all = await getExtensions();
+  return all.map((ext) => ({ params: { id: ext.id }, props: { ext } }));
+}) satisfies GetStaticPaths;
+
+const { ext } = Astro.props as { ext: Extension };
+const all = await getExtensions();
+const exists = (id: string) => all.some((e) => e.id === id);
+const nameOf = (id: string) => all.find((e) => e.id === id)?.short ?? id;
+
+const contributions = contributionsOf(ext);
+const tabs = [
+  { id: 'details', label: 'Details', count: null as number | null },
+  ...(contributions ? [{ id: 'contributions', label: 'Contributions', count: contributions.count }] : []),
+  { id: 'changelog', label: 'Changelog', count: null as number | null },
+];
+
+const everyPlatform = ext.platforms.length === 1 && ext.platforms[0].platform === 'any';
+const kinds: Record<string, string> = { lsp: 'Language service', theme: 'Theme', runtime: 'Runtime', lang: 'Syntax highlighting' };
+---
+
+<ExtLayout
+  title={`${ext.name} — Loog extension`}
+  description={EXTENSIONS.detailDescription(ext.name, ext.description)}
+  breadcrumbs={[
+    { name: 'Extensions', path: URLS.extensions },
+    { name: ext.short, path: extensionPath(ext.id) },
+  ]}
+>
+  <main class="w">
+    <nav class="crumb" aria-label="Breadcrumb">
+      <a href={URLS.extensions}>Extensions</a><span aria-hidden="true">/</span><span aria-current="page">{ext.short}</span>
+    </nav>
+
+    <div class="dh">
+      {ext.icon ? <img class="ico" src={ext.icon} width="112" height="112" alt="" /> : <span class="ico" style="width:112px;height:112px"></span>}
+      <div style="min-width:0">
+        <h1>{ext.name}</h1>
+        <div class="meta">
+          <span class="pub">{ext.publisher}</span>
+          <span class="chip">v{ext.version}</span>
+          <span class="chip">{ext.license}</span>
+          <button type="button" data-copy={ext.id} title="Copy the identifier">{ext.id} ⧉</button>
+        </div>
+        <p class="dlead">{ext.description}</p>
+        <div class="getrow">
+          <a class="btn" href={EXTENSIONS.installUrl(ext.id)}>Install</a>
+          <span class="how">Opens in Loog</span>
+        </div>
+      </div>
+    </div>
+
+    <nav class="tabs" id="tabs" aria-label="Sections">
+      {tabs.map((t, i) => (
+        <a href={`#${t.id}`} data-tab={t.id} aria-current={i === 0 ? 'page' : undefined}>
+          {t.label}{t.count !== null && <em> ({t.count})</em>}
+        </a>
+      ))}
+    </nav>
+
+    <div class="dbody">
+      <div>
+        <section class="panel" id="p-details" data-active>
+          <h2 class="sr">Details</h2>
+          <div class="md" set:html={ext.readmeHtml} />
+        </section>
+
+        {contributions && (
+          <section class="panel" id="p-contributions">
+            <h2 class="sr">Contributions</h2>
+            {contributions.kind === 'highlight' ? (
+              <>
+                <div class="cth">Syntax highlighting</div>
+                <table class="ct">
+                  <thead><tr><th>Grammar</th><th>File types</th></tr></thead>
+                  <tbody>
+                    {ext.highlight.map((h) => (
+                      <tr><td>{h.name}</td><td><div class="chips">{h.fileTypes.map((t) => <span class="chip">{t}</span>)}</div></td></tr>
+                    ))}
+                  </tbody>
+                </table>
+              </>
+            ) : (
+              <>
+                <div class="cth">Language service</div>
+                <table class="ct">
+                  <thead><tr><th>Server</th><th>Languages</th></tr></thead>
+                  <tbody>
+                    <tr><td>{ext.service?.name ?? ext.short}</td><td><div class="chips">{ext.service?.languages.map((t) => <span class="chip">{t}</span>)}</div></td></tr>
+                  </tbody>
+                </table>
+              </>
+            )}
+          </section>
+        )}
+
+        <section class="panel" id="p-changelog">
+          <h2 class="sr">Changelog</h2>
+          <div class="md" set:html={ext.changelogHtml} />
+        </section>
+      </div>
+
+      <aside class="side">
+        <div>
+          <h2>More information</h2>
+          <dl>
+            <dt>Identifier</dt><dd>{ext.id}</dd>
+            <dt>Type</dt><dd>{kinds[ext.kind]}</dd>
+            <dt>Version</dt><dd>{ext.version}</dd>
+            <dt>Publisher</dt><dd>{ext.publisher}</dd>
+            <dt>License</dt><dd>{ext.license}</dd>
+            <dt>Needs</dt><dd>Loog {ext.needs}</dd>
+            <dt>Platforms</dt><dd>{everyPlatform ? 'Every platform' : `${ext.platforms.length} platforms`}</dd>
+            {ext.revision && <><dt>Source</dt><dd><a href={`${EXTENSIONS.repo}/tree/${ext.revision}/extensions/${ext.id}`} rel="noopener">{ext.revision.slice(0, 7)}</a></dd></>}
+          </dl>
+        </div>
+        {ext.categories.length > 0 && (
+          <div><h2>Categories</h2><div class="chips">{ext.categories.map((c) => <span class="chip">{c}</span>)}</div></div>
+        )}
+        {ext.keywords.length > 0 && (
+          <div><h2>Keywords</h2><div class="chips">{ext.keywords.map((k) => <span class="chip">{k}</span>)}</div></div>
+        )}
+        {ext.recommends.length > 0 && (
+          <div>
+            <h2>Works well with</h2>
+            <div class="chips">{ext.recommends.map((id) => (exists(id) ? <a class="chip" href={extensionPath(id)}>{nameOf(id)}</a> : <span class="chip">{id}</span>))}</div>
+          </div>
+        )}
+        {ext.requires.length > 0 && (
+          <div>
+            <h2>Requires</h2>
+            <div class="chips">{ext.requires.map((id) => (exists(id) ? <a class="chip" href={extensionPath(id)}>{nameOf(id)}</a> : <span class="chip">{id}</span>))}</div>
+          </div>
+        )}
+        <div>
+          <h2>Permissions</h2>
+          {ext.capabilities.length > 0 ? (
+            <div class="perms">{ext.capabilities.map((p) => <span>{p}</span>)}</div>
+          ) : (
+            <span class="none">None. It only adds data.</span>
+          )}
+        </div>
+      </aside>
+    </div>
+  </main>
+</ExtLayout>
+
+<script>
+  import { initExtensionDetail } from '../../scripts/ext-detail';
+  initExtensionDetail();
+</script>

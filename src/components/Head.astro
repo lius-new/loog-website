@@ -1,0 +1,98 @@
+---
+// <head> 里除样式外的全部内容:标题、搜索摘要、规范地址、社交分享卡片、结构化数据、字体预加载。
+// 首页(layouts/Base.astro)和扩展页(layouts/ExtLayout.astro)共用。
+// 字体的 CSS 和站点样式由各自的 layout 引入,这里只预加载字体文件。
+
+// 首屏用到的两个 latin 字体子集:预加载,让它们在首次绘制前就到位,避免文字晚到时重排。
+import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
+import geistMonoLatin from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url';
+
+import { SITE, URLS } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+  /** 面包屑(不含首页):用于搜索结果里的路径显示 */
+  breadcrumbs?: { name: string; path: string }[];
+}
+const { title = SITE.seoTitle, description = SITE.description, breadcrumbs = [] } = Astro.props;
+
+// 规范地址:站点域名(astro.config.mjs 的 site)+ 当前路径
+const canonical = new URL(Astro.url.pathname, Astro.site).href;
+const origin = new URL('/', Astro.site).href;
+const image = new URL(SITE.shareImage.path, Astro.site).href;
+
+// 结构化数据:告诉搜索引擎"这是一个站点,它介绍的是一款免费、开源的桌面开发者软件"。
+// 站点级的描述固定用 SITE.description,不随页面变化。不包含评分、评论、版本号:没有真实数据,也不想让版本号过期。
+const structuredData = {
+  '@context': 'https://schema.org',
+  '@graph': [
+    {
+      '@type': 'WebSite',
+      '@id': `${origin}#website`,
+      url: origin,
+      name: SITE.name,
+      description: SITE.description,
+      inLanguage: 'en',
+    },
+    {
+      '@type': 'SoftwareApplication',
+      '@id': `${origin}#app`,
+      name: SITE.name,
+      url: origin,
+      description: SITE.description,
+      applicationCategory: 'DeveloperApplication',
+      operatingSystem: 'Windows, macOS, Linux',
+      isAccessibleForFree: true,
+      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
+      license: ['https://www.apache.org/licenses/LICENSE-2.0', 'https://opensource.org/license/mit'],
+      downloadUrl: URLS.releases,
+      image,
+      sameAs: [SITE.repo],
+      isPartOf: { '@id': `${origin}#website` },
+    },
+    ...(breadcrumbs.length
+      ? [
+          {
+            '@type': 'BreadcrumbList',
+            itemListElement: [{ name: SITE.name, path: '/' }, ...breadcrumbs].map((item, i) => ({
+              '@type': 'ListItem',
+              position: i + 1,
+              name: item.name,
+              item: new URL(item.path, Astro.site).href,
+            })),
+          },
+        ]
+      : []),
+  ],
+};
+---
+
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>{title}</title>
+<meta name="description" content={description} />
+<meta name="theme-color" content="#1c1a17" />
+<meta name="generator" content={Astro.generator} />
+<link rel="canonical" href={canonical} />
+<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+<link rel="icon" href="/favicon.ico" sizes="any" />
+<link rel="preload" as="font" type="font/woff2" href={bricolageLatin} crossorigin />
+<link rel="preload" as="font" type="font/woff2" href={geistMonoLatin} crossorigin />
+<meta name="robots" content="index, follow, max-image-preview:large" />
+<meta property="og:type" content="website" />
+<meta property="og:url" content={canonical} />
+<meta property="og:site_name" content={SITE.name} />
+<meta property="og:locale" content="en_US" />
+<meta property="og:title" content={title} />
+<meta property="og:description" content={description} />
+<meta property="og:image" content={image} />
+<meta property="og:image:width" content={String(SITE.shareImage.width)} />
+<meta property="og:image:height" content={String(SITE.shareImage.height)} />
+<meta property="og:image:alt" content={SITE.shareImage.alt} />
+<meta name="twitter:card" content="summary_large_image" />
+<meta name="twitter:title" content={title} />
+<meta name="twitter:description" content={description} />
+<meta name="twitter:image" content={image} />
+<meta name="twitter:image:alt" content={SITE.shareImage.alt} />
+<script type="application/ld+json" set:html={JSON.stringify(structuredData)} />

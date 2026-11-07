@@ -1,0 +1,34 @@
+---
+// 扩展页(列表和详情)的页面外壳:自托管字体、共用的颜色变量、扩展页样式。
+// 不引入首页的 hero / window / responsive 样式,首页的样式顺序不受影响。
+import '../styles/extensions.css'; // 内含字体、tokens.css 和 base.css(见该文件开头的说明)
+
+import ExtHeader from '../components/ExtHeader.astro';
+import Head from '../components/Head.astro';
+
+interface Props {
+  title: string;
+  description: string;
+  breadcrumbs?: { name: string; path: string }[];
+}
+const { title, description, breadcrumbs } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <Head title={title} description={description} breadcrumbs={breadcrumbs} />
+    <!-- 有脚本时才启用只显示一个标签页的样式,避免没有脚本时内容被藏起来 -->
+    <script is:inline>
+      document.documentElement.classList.add('js');
+    </script>
+  </head>
+  <body class="ext">
+    <ExtHeader />
+    <slot />
+    <script>
+      import { initWordmark } from '../scripts/wordmark';
+      initWordmark();
+    </script>
+  </body>
+</html>

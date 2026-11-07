@@ -1,5 +1,5 @@
 ---
-// 页面外壳:<head>、自托管字体、全局样式、图标精灵图。
+// 首页的页面外壳:自托管字体、全局样式、图标精灵图。<head> 的内容在 components/Head.astro(与扩展页共用)。
 import '@fontsource-variable/bricolage-grotesque/opsz.css';
 import '@fontsource-variable/geist-mono/index.css';
 import '../styles/tokens.css';
@@ -8,88 +8,20 @@ import '../styles/hero.css';
 import '../styles/window.css';
 import '../styles/responsive.css'; // 必须最后:覆盖前面的桌面样式
 
-// 首屏用到的两个 latin 字体子集:预加载,让它们在首次绘制前就到位,避免文字晚到时重排。
-import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
-import geistMonoLatin from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url';
-
+import Head from '../components/Head.astro';
 import Sprite from '../components/Sprite.astro';
-import { SITE, URLS } from '../data/site';
 
 interface Props {
   title?: string;
   description?: string;
 }
-const { title = SITE.seoTitle, description = SITE.description } = Astro.props;
-
-// 规范地址:站点域名(astro.config.mjs 的 site)+ 当前路径
-const canonical = new URL(Astro.url.pathname, Astro.site).href;
-const origin = new URL('/', Astro.site).href;
-const image = new URL(SITE.shareImage.path, Astro.site).href;
-
-// 结构化数据:告诉搜索引擎"这是一个站点,它介绍的是一款免费、开源的桌面开发者软件"。
-// 不包含评分、评论、版本号:没有真实数据,也不想让版本号过期。
-const structuredData = {
-  '@context': 'https://schema.org',
-  '@graph': [
-    {
-      '@type': 'WebSite',
-      '@id': `${origin}#website`,
-      url: origin,
-      name: SITE.name,
-      description,
-      inLanguage: 'en',
-    },
-    {
-      '@type': 'SoftwareApplication',
-      '@id': `${origin}#app`,
-      name: SITE.name,
-      url: origin,
-      description,
-      applicationCategory: 'DeveloperApplication',
-      operatingSystem: 'Windows, macOS, Linux',
-      isAccessibleForFree: true,
-      offers: { '@type': 'Offer', price: '0', priceCurrency: 'USD' },
-      license: ['https://www.apache.org/licenses/LICENSE-2.0', 'https://opensource.org/license/mit'],
-      downloadUrl: URLS.releases,
-      image,
-      sameAs: [SITE.repo],
-      isPartOf: { '@id': `${origin}#website` },
-    },
-  ],
-};
+const { title, description } = Astro.props;
 ---
 
 <!doctype html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>{title}</title>
-    <meta name="description" content={description} />
-    <meta name="theme-color" content="#1c1a17" />
-    <meta name="generator" content={Astro.generator} />
-    <link rel="canonical" href={canonical} />
-    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-    <link rel="icon" href="/favicon.ico" sizes="any" />
-    <link rel="preload" as="font" type="font/woff2" href={bricolageLatin} crossorigin />
-    <link rel="preload" as="font" type="font/woff2" href={geistMonoLatin} crossorigin />
-    <meta name="robots" content="index, follow, max-image-preview:large" />
-    <meta property="og:type" content="website" />
-    <meta property="og:url" content={canonical} />
-    <meta property="og:site_name" content={SITE.name} />
-    <meta property="og:locale" content="en_US" />
-    <meta property="og:title" content={title} />
-    <meta property="og:description" content={description} />
-    <meta property="og:image" content={image} />
-    <meta property="og:image:width" content={String(SITE.shareImage.width)} />
-    <meta property="og:image:height" content={String(SITE.shareImage.height)} />
-    <meta property="og:image:alt" content={SITE.shareImage.alt} />
-    <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content={title} />
-    <meta name="twitter:description" content={description} />
-    <meta name="twitter:image" content={image} />
-    <meta name="twitter:image:alt" content={SITE.shareImage.alt} />
-    <script type="application/ld+json" set:html={JSON.stringify(structuredData)} />
+    <Head title={title} description={description} />
   </head>
   <body>
     <Sprite />

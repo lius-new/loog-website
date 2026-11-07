@@ -1,0 +1,19 @@
+---
+// 扩展页的顶栏:左边是点阵字标(scripts/wordmark.ts 画),右边是导航。链接来自 data/site.ts。
+import { SITE, URLS } from '../data/site';
+---
+
+<header class="gh">
+  <div class="w">
+    <a class="logo" href="/" aria-label={`${SITE.name} home`}>
+      <canvas id="wordmark" aria-hidden="true"></canvas>
+      <span class="logo-txt" aria-hidden="true">{SITE.name}</span>
+    </a>
+    <nav aria-label="Main">
+      <a class="on" href={URLS.extensions} aria-current="page">Extensions</a>
+      <a href={URLS.docs} target="_blank" rel="noopener">Docs</a>
+      <a href={URLS.repo} target="_blank" rel="noopener">GitHub</a>
+      <a class="btn" href={URLS.releases} target="_blank" rel="noopener">Download</a>
+    </nav>
+  </div>
+</header>

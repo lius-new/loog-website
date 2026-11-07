@@ -17,8 +17,32 @@ export const SITE = {
 export const URLS = {
   repo: SITE.repo,
   releases: `${SITE.repo}/releases/latest`,
-  extensions: `${SITE.repo}/blob/main/docs/extensions-roadmap.md`,
+  /** 站内的扩展页(src/pages/extensions) */
+  extensions: '/extensions/',
   docs: `${SITE.repo}/tree/main/docs`,
+} as const;
+
+/**
+ * 扩展页的数据来源与文案。
+ * 扩展列表在构建时从官方扩展仓库发布的、带签名的索引读取(src/data/extensions.ts),不手写。
+ */
+export const EXTENSIONS = {
+  repo: 'https://github.com/lius-new/loog-extensions',
+  /** 索引和它的签名,都是 `registry` 发布里的文件(格式见扩展仓库的 docs/index-format.md) */
+  indexUrl: 'https://github.com/lius-new/loog-extensions/releases/download/registry/index.json',
+  signatureUrl: 'https://github.com/lius-new/loog-extensions/releases/download/registry/index.json.sig',
+  /** 验证索引签名的 Ed25519 公钥(base64),与扩展仓库 loog-ext.toml 的 [index.keys] 一致 */
+  keys: { 'index-2026-1': 'rB3b9rxiXnaM5RDpE4QYDT5M3aJxWBByg7XePFL5ORo=' } as Record<string, string>,
+  /** 应用的链接协议:Install 按钮用它请求安装。路径是约定,需要和应用端对齐。 */
+  installUrl: (id: string) => `loog://extensions/install?id=${encodeURIComponent(id)}`,
+  /** 列表页的标题、摘要和头部说明(数量在页面里按实际数据填) */
+  listTitle: 'Extensions for Loog — Languages, Language Services, Themes',
+  listDescription: (count: number, languages: number) =>
+    `Browse ${count} official Loog extensions: syntax highlighting for ${languages} languages, language servers, themes and runtimes.`,
+  listIntro: 'extensions: languages, language services, themes and runtimes.',
+  searchPlaceholder: 'Search name or file type',
+  detailDescription: (name: string, summary: string) =>
+    `${summary} Install the ${name} extension in Loog, the fast, open-source code editor.`,
 } as const;
 
 /** 悬停某一功能时,右侧窗口里亮起的区域(对应 styles/hero.css 里的 data-hl 规则)。 */
@@ -69,6 +93,6 @@ export interface LinkItem {
 
 export const links: LinkItem[] = [
   { label: 'GitHub', title: 'GitHub repository', hint: 'lius-new/loog', href: URLS.repo, key: 'g', icon: 'github' },
-  { label: 'Extensions', title: 'Extensions', hint: 'guide', href: URLS.extensions, key: 'e', icon: 'extensions' },
+  { label: 'Extensions', title: 'Extensions', hint: 'browse', href: URLS.extensions, key: 'e', icon: 'extensions' },
   { label: 'Docs', title: 'Documentation', hint: 'docs/', href: URLS.docs, key: 'd', icon: 'book' },
 ];

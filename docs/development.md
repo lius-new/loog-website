@@ -27,25 +27,38 @@ Node 22.23.4 or newer is required (see `engines`).
 
 ```
 src/
-  pages/index.astro        the page: Hero + script wiring
-  layouts/Base.astro       <head>, self-hosted fonts, global styles, icon sprite
+  pages/
+    index.astro            the home page: Hero + script wiring
+    extensions/index.astro the extensions list (/extensions/)
+    extensions/[id].astro  one page per extension (/extensions/<id>/)
+    sitemap.xml.ts         sitemap, generated from the page list and the extensions
+  layouts/
+    Base.astro             home: self-hosted fonts, global styles, icon sprite
+    ExtLayout.astro        extensions pages: header, extensions styles
   components/
+    Head.astro             <head> content shared by both layouts: title, canonical, share cards, JSON-LD
     Hero.astro             canvas + stage; assembles the pieces below
     Intro.astro            tagline, subtitle, Download button
     FeatureIndex.astro     feature index + large links (desktop)
     QuickLinks.astro       GitHub / Extensions / Docs row (mobile)
     AppWindow.astro        the mock Loog window (decorative, aria-hidden)
+    ExtHeader.astro        top bar of the extensions pages
     Icon.astro, FileIcon.astro, Sprite.astro
   data/
-    site.ts                name, tagline, URLs, features, links: the single source of copy
+    site.ts                name, tagline, URLs, features, links, extensions copy: the single source of copy
+    extensions.ts          loads, verifies and shapes the extension index at build time
     mock.ts                file lists shown inside the mock window
     diff.ts                the commit diff shown inside the mock window
   scripts/
     dots.ts                the dot-matrix canvas and its intro animation
     interactions.ts        hover-to-highlight sync, G / E / D shortcuts
     window-scale.ts        scales the mock window to fit phones
+    wordmark.ts            the small dot-matrix logo in the extensions top bar
+    ext-list.ts            extensions list: search, index, "/" shortcut
+    ext-detail.ts          extension page: tabs, copy the identifier
   styles/
-    tokens.css  base.css  hero.css  window.css  responsive.css   (imported in this order)
+    tokens.css  base.css  hero.css  window.css  responsive.css   (home, imported in this order)
+    extensions.css         extensions pages (pulls in fonts, tokens.css and base.css itself)
   assets/sprite.svg        icon sprite
 public/                    favicon (the Loog icon)
 docs/development.md        this file
@@ -90,6 +103,36 @@ shortcuts are all generated from it.
   and is rendered with `<Fragment set:html>`; do not paste code into templates.
 - `.dl` (a diff row) uses `white-space: pre`. Keep each row on one line in the template, with no
   whitespace between `<i>` and the code.
+
+## Extensions pages
+
+`/extensions/` lists the official extensions and `/extensions/<id>/` has one page for each (Details, Contributions,
+Changelog, and a side panel with the identifier, version, licence, permissions and so on).
+
+- **Data comes from the extension repository, not from this one.** At build time `src/data/extensions.ts` downloads
+  the signed index (`index.json` and `index.json.sig` from the `registry` release of
+  [lius-new/loog-extensions](https://github.com/lius-new/loog-extensions), format in that repository's
+  `docs/index-format.md`), **verifies the Ed25519 signature** with the public key in `src/data/site.ts`, and keeps
+  the `loog.*` entries. The index also holds old `loom.*` duplicates from before the rename; they are skipped.
+  A failed download or a bad signature **fails the build**: the site is not published with unverified data. An
+  expired index only logs a warning.
+- **The pages only change when the site is rebuilt.** Nothing here watches the extension repository. After new
+  extensions are published, rebuild the site (a push to `main`, or a Cloudflare deploy hook called from the
+  extension repository's publish workflow; the hook is not set up yet).
+- **README and changelog** are Markdown from the index, rendered with `marked` and cleaned with `sanitize-html`
+  (a short list of tags, no images, only absolute `http(s)` and `mailto:` links; relative links become plain text).
+- **Install** is a `loog://extensions/install?id=<id>` link (`EXTENSIONS.installUrl`). The path is a proposal that
+  the app has to implement; until then the button does nothing. There are no download links on purpose.
+- **Contributions tab** only exists where the index has structured data: grammars and file types for highlighting
+  extensions, languages for language services. Themes and runtimes have none, so the tab is left out.
+- **Tabs** show one panel at a time when JavaScript is on (`#changelog` opens that tab); without JavaScript all
+  three panels are shown one after another.
+- **Styles are separate from the home page.** `extensions.css` pulls in the fonts, `tokens.css` and `base.css` with
+  `@import` instead of the layout importing them again. If both layouts imported the same CSS module, the build would
+  move it into a shared chunk and the home page would get an extra render-blocking stylesheet. After touching the
+  layouts, check that `dist/_astro` still has one `index.*.css` for the home page.
+- **The small logo** in the top bar is the home page's dot-matrix wordmark (same sampling as `dots.ts`) at the
+  height of the bar, without the pink band. Its size comes from CSS, so it does not move the layout.
 
 ## Icons
 
@@ -146,9 +189,10 @@ dashboard:
   screen: lay the page out at 1500×788 in headless Chrome and capture it at a device scale of 0.8, with
   `?static` so the canvas intro is skipped. The declared size in `site.ts` must match the file. Regenerate it
   when the first screen's design changes.
-- **`public/robots.txt` and `public/sitemap.xml`**. The sitemap is written by hand because the site has one
-  page; add a `<url>` when you add a page. Cloudflare's "managed robots.txt" feature may add its own header to
-  the served `robots.txt`.
+- **`public/robots.txt` and the sitemap**. `robots.txt` is a file in `public/`. The sitemap is generated
+  (`src/pages/sitemap.xml.ts`) from the home page, the extensions list and every extension page, so it needs no
+  editing; a new static page has to be added to its path list. Cloudflare's "managed robots.txt" feature may add its
+  own header to the served `robots.txt`.
 - **One `<h1>`** (visually hidden, "Loog: A fast, minimal code editor.") says what the page is. The wordmark on
   the canvas is the visual title.
 - **Not code, but it matters most:** register the site in Google Search Console and Bing Webmaster Tools and
@@ -160,6 +204,8 @@ dashboard:
 - The first screen is complete on desktop, tablet and phone widths.
 - The Download button links to the latest GitHub release. It always reads "Download for Windows": OS
   detection and per-platform links are not implemented yet.
+- The extensions list and one page per extension (55 at the time of writing) are built from the signed extension
+  index. They are not rebuilt on their own when the index changes, and Install needs the app to handle `loog://`.
 - No licence has been chosen for this repository.
 - Deployed on Cloudflare at <https://loog.dev>, with a share image, sitemap, `robots.txt` and structured data.
 - English only: there is no Chinese version or `hreflang` yet.

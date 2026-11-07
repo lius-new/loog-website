@@ -18,7 +18,7 @@ export function initHighlightSync(): void {
   });
 }
 
-/** 键盘 G / E / D:打开 GitHub、扩展指南、文档(对应 FeatureIndex 里带 data-key 的大号链接)。 */
+/** 键盘 G / E / D:打开 GitHub、扩展页、文档(对应 FeatureIndex 里带 data-key 的大号链接)。 */
 export function initShortcuts(): void {
   addEventListener('keydown', (e) => {
     if (e.ctrlKey || e.metaKey || e.altKey) return;
@@ -27,6 +27,8 @@ export function initShortcuts(): void {
     const link = document.querySelector<HTMLAnchorElement>(`.catalog [data-key="${e.key.toLowerCase()}"]`);
     if (!link) return;
     e.preventDefault();
-    window.open(link.href, '_blank', 'noopener');
+    // 站内链接(扩展页)在当前页打开,外部链接在新标签页打开
+    if (link.target === '_blank') window.open(link.href, '_blank', 'noopener');
+    else location.assign(link.href);
   });
 }

@@ -1,0 +1,77 @@
+---
+// 扩展列表页 /extensions/:按类型分区(语言服务 / 主题 / 运行时 / 语言),左侧是索引,可搜索。
+// 数据在构建时来自官方扩展仓库的签名索引(src/data/extensions.ts)。
+import ExtLayout from '../../layouts/ExtLayout.astro';
+import { EXTENSIONS, URLS } from '../../data/site';
+import { KINDS, extensionPath, getExtensions, tagsOf, type Extension } from '../../data/extensions';
+
+const all = await getExtensions();
+const sections = KINDS.map((k, i) => ({ ...k, number: String(i + 1).padStart(2, '0'), items: all.filter((e) => e.kind === k.kind) })).filter(
+  (s) => s.items.length,
+);
+const languageCount = all.filter((e) => e.kind === 'lang').length;
+
+// 搜索用的小写文本:标识符、名称、文件类型或语言、关键词
+const searchText = (e: Extension) => [e.id, e.name, ...tagsOf(e), ...e.keywords].join(' ').toLowerCase();
+---
+
+<ExtLayout
+  title={EXTENSIONS.listTitle}
+  description={EXTENSIONS.listDescription(all.length, languageCount)}
+  breadcrumbs={[{ name: 'Extensions', path: URLS.extensions }]}
+>
+  <main class="w" id="list">
+    <section class="intro">
+      <h1>Extensions</h1>
+      <div class="row2">
+        <p><b>{all.length}</b> {EXTENSIONS.listIntro}</p>
+        <label class="search">
+          <span class="mag" aria-hidden="true">⌕</span>
+          <input id="q" type="search" placeholder={EXTENSIONS.searchPlaceholder} aria-label="Search extensions" autocomplete="off" />
+          <kbd aria-hidden="true">/</kbd>
+        </label>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <nav class="rail" id="rail" aria-label="Sections">
+        <h2>Index</h2>
+        {sections.map((s) => (
+          <a href={`#sec-${s.kind}`} data-k={s.kind}><i>{s.number}</i><b>{s.title}</b><em>{s.items.length}</em></a>
+        ))}
+      </nav>
+
+      <div id="secs">
+        {sections.map((s) => (
+          <section class="sec" id={`sec-${s.kind}`} data-k={s.kind}>
+            <h2><i>{s.number}</i>{s.title}<em class="cnt">{s.items.length}</em></h2>
+            {s.items.map((e) => {
+              const tags = tagsOf(e);
+              return (
+                <a class="row" href={extensionPath(e.id)} data-s={searchText(e)}>
+                  {e.icon ? <img class="ico" src={e.icon} width="40" height="40" alt="" loading="lazy" decoding="async" /> : <span class="ico" style="width:40px;height:40px"></span>}
+                  <div style="min-width:0">
+                    <div class="nm">{e.short}</div>
+                    <div class="ds">{e.description}</div>
+                  </div>
+                  <div class="chips tg">
+                    {tags.slice(0, 4).map((t) => <span class="chip">{t}</span>)}
+                    {tags.length > 4 && <span class="chip">+{tags.length - 4}</span>}
+                  </div>
+                  <span class="v">{e.version}</span>
+                  <span class="ar" aria-hidden="true">→</span>
+                </a>
+              );
+            })}
+          </section>
+        ))}
+        <p class="empty" id="none" hidden>Nothing matches.</p>
+      </div>
+    </div>
+  </main>
+</ExtLayout>
+
+<script>
+  import { initExtensionList } from '../../scripts/ext-list';
+  initExtensionList();
+</script>

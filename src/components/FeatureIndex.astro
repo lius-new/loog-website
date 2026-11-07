@@ -23,7 +23,7 @@ import { coreFeatures, everydayFeatures, links } from '../data/site';
 
   <div class="ix big">
     {links.map((link) => (
-      <a class="r" data-key={link.key} href={link.href} target="_blank" rel="noopener"><span class="n">{link.title}</span><i class="l"></i><span class="m">{link.hint}</span></a>
+      <a class="r" data-key={link.key} href={link.href} {...(link.href.startsWith('/') ? {} : { target: '_blank', rel: 'noopener' })}><span class="n">{link.title}</span><i class="l"></i><span class="m">{link.hint}</span></a>
     ))}
   </div>
 </div>
