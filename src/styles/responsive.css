@@ -4,6 +4,10 @@
  * .info 与 .catalog 不生成盒子(display: contents),它们的子元素直接成为 .stage 的弹性子项,再用 order 重排。
  */
 @media (max-width: 900px) {
+  /* 手机:字标占满宽度的 88%,顶边 56px;底边 = 56 + 1.02 × 字号(公式与 dots.ts 一致) */
+  :root {
+    --wm-bottom: calc(56px + 1.02 * 0.88 * 100vw / var(--wm-em));
+  }
   .hero {
     height: auto;
     min-height: 100svh;

@@ -53,6 +53,8 @@ export function initDots(): void {
   let s = 14; // 点距
   let dots: Dot[] = [];
   let T = reduce ? 99 : 0; // 动画时间(秒);99 = 已完成
+  // 字标宽度(em),与 CSS 共用同一个常数
+  const wordmarkEm = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--wm-em')) || 2.005;
   let mx = -1e4; // 鼠标位置(画布坐标)
   let my = -1e4;
   let raf = 0;
@@ -73,8 +75,7 @@ export function initDots(): void {
     const o = off.getContext('2d', { willReadFrequently: true });
     if (!o) return;
     o.letterSpacing = '-0.03em';
-    o.font = `800 100px ${FAMILY}`;
-    const m = o.measureText('Loog').width;
+    const m = wordmarkEm * 100; // 100px 时字标的宽度(来自 CSS 常数,不现场测量,见 styles/tokens.css 的 --wm-em)
     const sr = stageEl.getBoundingClientRect();
     const hr = heroEl.getBoundingClientRect();
     const sx = sr.left - hr.left;
@@ -94,9 +95,8 @@ export function initDots(): void {
     o.fillText('Loog', x0, baseline);
     const img = o.getImageData(0, 0, W, H).data;
 
-    // 把字标的底边告诉样式,窗口和左栏据此对齐、手机端据此留出顶部空间
+    // 字标的底边。窗口、左栏的位置由 CSS 的 --wm-bottom 用同一个公式算出,这里只用来给"逐行铺设"定行序。
     const wmBottom = baseline + fs * 0.3;
-    heroEl.style.setProperty('--wm-bottom', Math.round(wmBottom) + 'px');
 
     const bandBase = capTop + fs * 0.34;
     const amp = fs * 0.2;

@@ -25,8 +25,19 @@
 
   /* 版面 */
   --pad: clamp(20px, 4.5vw, 72px);
-  --wm-bottom: 440px; /* 由 scripts/dots.ts 按字标的实际高度写入 */
-  --win-scale: 0.46;  /* 由 scripts/window-scale.ts 写入:手机上窗口整体缩放的比例 */
+  /* 字标 "Loog"(Bricolage Grotesque 800,字距 -0.03em)的宽度,单位 em。
+   实测值:100px 时宽 200.5px。scripts/dots.ts 用它画字标,下面的 --wm-bottom 用它排版,两边共用同一个常数。
+   换字体、字重或字距之后必须重新量一遍。 */
+  --wm-em: 2.005;
+  /* 字标底边离页面顶部的距离。窗口、左栏的位置和手机端的顶部留白都依赖它。
+     纯 CSS 计算(不等字体、不等脚本),所以首次绘制就是对的,加载过程中不会跳动。
+     公式与 dots.ts 一致:字标字号 = 舞台宽 × 0.66 ÷ --wm-em,上限由视口高度的 40% 决定;
+     字标底边 = 字顶 + 1.02 × 字号。 */
+  --wm-bottom: min(
+    40svh,
+    calc(clamp(40px, 6svh, 72px) + 1.02 * 0.66 * min(100vw - 2 * var(--pad), 1240px) / var(--wm-em))
+  );
+  --win-scale: 0.46; /* 由 scripts/window-scale.ts 写入:手机上窗口整体缩放的比例 */
 
   /* 字体(自托管,见 layouts/Base.astro) */
   --display: 'Bricolage Grotesque Variable', 'Segoe UI Variable Display', 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', system-ui, sans-serif;

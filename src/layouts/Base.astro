@@ -8,6 +8,10 @@ import '../styles/hero.css';
 import '../styles/window.css';
 import '../styles/responsive.css'; // 必须最后:覆盖前面的桌面样式
 
+// 首屏用到的两个 latin 字体子集:预加载,让它们在首次绘制前就到位,避免文字晚到时重排。
+import bricolageLatin from '@fontsource-variable/bricolage-grotesque/files/bricolage-grotesque-latin-opsz-normal.woff2?url';
+import geistMonoLatin from '@fontsource-variable/geist-mono/files/geist-mono-latin-wght-normal.woff2?url';
+
 import Sprite from '../components/Sprite.astro';
 import { SITE } from '../data/site';
 
@@ -29,6 +33,8 @@ const { title = `${SITE.name} — ${SITE.subtitle}`, description = SITE.descript
     <meta name="generator" content={Astro.generator} />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <link rel="icon" href="/favicon.ico" sizes="any" />
+    <link rel="preload" as="font" type="font/woff2" href={bricolageLatin} crossorigin />
+    <link rel="preload" as="font" type="font/woff2" href={geistMonoLatin} crossorigin />
     <meta property="og:type" content="website" />
     <meta property="og:site_name" content={SITE.name} />
     <meta property="og:title" content={title} />

@@ -59,6 +59,13 @@ shortcuts are all generated from it.
 - **Dot field** (`dots.ts`). The wordmark is rendered to an offscreen canvas, sampled onto a dot grid, and
   crossed by a sine-shaped band. The intro runs in three passes: base dots, wordmark, then the pink band.
   On phones (`<= 900px`) the wordmark sits at the top and all three passes run top to bottom.
+- **No layout shift while loading.** Where the window and left column sit depends on the wordmark's
+  height. That height (`--wm-bottom`) is computed in plain CSS from viewport units and a measured
+  constant, `--wm-em` (the width of "Loog" in em), so the first paint is already correct and nothing
+  waits for fonts or scripts. `dots.ts` reads the same constant to draw the wordmark. **If you change the
+  wordmark's font, weight or letter-spacing, re-measure `--wm-em`** (`measureText('Loog').width / 100` on a
+  canvas with the font set to `800 100px` and `letterSpacing = '-0.03em'`), otherwise the layout will
+  drift from the drawing. The two main fonts are preloaded in `Base.astro` for the same reason.
 - **Responsive**. Below 900px the left column and window are re-ordered with `display: contents` + `order`
   (see `responsive.css`). The window keeps its full three-panel layout at a 760px design width and is
   shrunk with `zoom`, so no content is dropped.
