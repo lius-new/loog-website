@@ -1,0 +1,19 @@
+---
+import Base from '../layouts/Base.astro';
+import Hero from '../components/Hero.astro';
+---
+
+<Base>
+  <Hero />
+</Base>
+
+<script>
+  import { initDots } from '../scripts/dots';
+  import { initHighlightSync, initShortcuts } from '../scripts/interactions';
+  import { initWindowScale } from '../scripts/window-scale';
+
+  initDots();
+  initHighlightSync();
+  initShortcuts();
+  initWindowScale();
+</script>

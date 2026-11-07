@@ -1,0 +1,192 @@
+/* 窄屏(<= 900px)版面:自上而下排列。必须放在最后,覆盖 hero.css / window.css 的桌面样式。
+ *
+ * 顺序:字标(画布,占版面) → 标语与下载 → 编辑器窗口 → 横向图标按钮 → 功能索引
+ * .info 与 .catalog 不生成盒子(display: contents),它们的子元素直接成为 .stage 的弹性子项,再用 order 重排。
+ */
+@media (max-width: 900px) {
+  .hero {
+    height: auto;
+    min-height: 100svh;
+    padding: var(--wm-bottom) var(--pad) 0;
+  }
+  .stage {
+    position: relative;
+    left: auto;
+    transform: none;
+    width: auto;
+    top: auto;
+    bottom: auto;
+    display: flex;
+    flex-direction: column;
+  }
+  .info,
+  .catalog,
+  .feats {
+    display: contents;
+  }
+  .info {
+    container-type: normal;
+  }
+
+  /* 下载按钮:只写 Download,撑满整行;平台说明不显示 */
+  .btn {
+    flex: 1;
+    justify-content: center;
+  }
+  .btn .for,
+  .cta .fine {
+    display: none;
+  }
+
+  .info .top {
+    order: 1;
+  }
+  .win {
+    order: 2;
+  }
+  .quick {
+    order: 3;
+  }
+  .ix-first {
+    order: 4;
+  }
+  .c-s {
+    order: 5;
+  }
+  .ix-g2 {
+    order: 6;
+  }
+  .f-top,
+  .f-bot,
+  .ix.big {
+    display: none; /* 三条大号链接由横向图标按钮取代 */
+  }
+
+  /* 横向图标按钮:三项等宽,发丝线分隔,上下刻度尺括住 */
+  .quick {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    position: relative;
+    margin: 8px 0 34px;
+    padding: 16px 0 14px;
+  }
+  .quick::before,
+  .quick::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 10px;
+    background:
+      linear-gradient(rgba(255, 244, 234, 0.28), rgba(255, 244, 234, 0.28)) 0 0 / 100% 1px no-repeat,
+      repeating-linear-gradient(90deg, rgba(255, 244, 234, 0.3) 0 1px, transparent 1px 8px) 0 0 / 100% 4px no-repeat,
+      repeating-linear-gradient(90deg, rgba(255, 244, 234, 0.5) 0 1px, transparent 1px 40px) 0 0 / 100% 9px no-repeat;
+    -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent);
+    mask-image: linear-gradient(90deg, #000 55%, transparent);
+  }
+  .quick::before {
+    top: 0;
+  }
+  .quick::after {
+    bottom: 0;
+    transform: scaleY(-1);
+  }
+  .qb {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    gap: 5px;
+    padding: 12px 8px 10px;
+    color: var(--cream);
+    -webkit-tap-highlight-color: transparent;
+  }
+  .qb + .qb {
+    border-left: 1px solid rgba(255, 244, 234, 0.13);
+  }
+  .qb .ic {
+    width: 22px;
+    height: 22px;
+    color: rgba(255, 244, 234, 0.78);
+    margin-bottom: 4px;
+    transition: color 0.15s;
+  }
+  .qb .nm {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    transition: color 0.15s;
+  }
+  .qb .ht {
+    font: 400 11.5px var(--mono);
+    color: var(--muted);
+  }
+  .qb:active .ic,
+  .qb:active .nm {
+    color: var(--thread);
+  }
+
+  /* 功能索引:两列样本格(名称 / 短点线 / 提示),充分利用横向空间 */
+  .ix-first,
+  .ix-g2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+  .ix-first .r,
+  .ix-g2 .r {
+    display: block;
+    padding: 14px 12px 13px 0;
+  }
+  .ix-first .r:nth-child(2n),
+  .ix-g2 .r:nth-child(2n) {
+    padding-left: 14px;
+    padding-right: 0;
+    border-left: 1px solid rgba(255, 244, 234, 0.13);
+  }
+  .ix-first .r:nth-child(n + 3),
+  .ix-g2 .r:nth-child(n + 3) {
+    border-top: 1px solid rgba(255, 244, 234, 0.13);
+  }
+  .ix-g2 .r:last-child:nth-child(odd) {
+    grid-column: 1 / -1;
+  }
+  .ix-first .n,
+  .ix-g2 .n {
+    display: block;
+    font-size: 17px;
+  }
+  .ix-first .l,
+  .ix-g2 .l {
+    display: block;
+    width: 100%;
+    height: 6px;
+    margin: 8px 0 7px;
+  }
+  .ix-first .m,
+  .ix-g2 .m {
+    display: block;
+    font-size: 12px;
+  }
+
+  /* 窗口保持完整的三栏布局(设计宽度 760px),再用 zoom 整体缩放到屏幕宽度,内容不删减 */
+  .win {
+    position: relative;
+    left: auto;
+    right: auto;
+    top: auto;
+    bottom: auto;
+    margin: 36px auto 28px;
+    width: 760px;
+    height: 680px;
+    zoom: var(--win-scale);
+  }
+  .win .body {
+    grid-template-columns: 170px minmax(0, 1fr) 130px;
+  }
+  .win .gl {
+    display: flex;
+  }
+  .win .gr {
+    display: block;
+  }
+}

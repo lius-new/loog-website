@@ -1,0 +1,13 @@
+---
+// 标语、副标题和下载按钮。手机端只显示 "Download" 并撑满整行,平台说明隐藏(见 styles/responsive.css)。
+import { SITE, URLS } from '../data/site';
+---
+
+<div class="top">
+  <h2>{SITE.tagline}</h2>
+  <p class="sub">{SITE.subtitle}</p>
+  <div class="cta">
+    <a class="btn" href={URLS.releases}>Download<span class="for">for Windows</span></a>
+    <span class="fine">Also for macOS and Linux</span>
+  </div>
+</div>

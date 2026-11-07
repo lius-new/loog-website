@@ -1,0 +1,11 @@
+---
+// 手机端:横向三个链接(GitHub / Extensions / Docs)。桌面端隐藏,由 FeatureIndex 里的大号链接取代。
+import Icon from './Icon.astro';
+import { links } from '../data/site';
+---
+
+<nav class="quick" aria-label="Links">
+  {links.map((link) => (
+    <a class="qb" href={link.href} target="_blank" rel="noopener"><Icon name={link.icon} /><span class="nm">{link.label}</span><span class="ht">{link.hint}</span></a>
+  ))}
+</nav>

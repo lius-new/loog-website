@@ -1,0 +1,112 @@
+---
+// 首屏右侧的 Loog 窗口示意。参考应用的真实界面,主题用官网自己的浅色。
+// 纯 HTML/CSS(装饰性,对读屏隐藏),之后可以整体换成真实截图。
+import Icon from './Icon.astro';
+import FileIcon from './FileIcon.astro';
+import { changes, tree } from '../data/mock';
+import { diff } from '../data/diff';
+
+const groups = [
+  { label: 'Unstaged', files: changes.unstaged },
+  { label: 'Untracked', files: changes.untracked },
+];
+---
+
+<div class="win" aria-hidden="true">
+  <!-- 标题栏 -->
+  <div class="chrome">
+    <span class="path"><b>loog</b> <i>/</i> <span class="br"><Icon name="git-branch" /> main<b>*</b></span> <i><Icon name="sync" /></i></span>
+    <span class="ctl"><Icon name="panel-left" /><Icon name="panel-right" /><Icon name="panel-bottom" /><Icon name="extensions" /><Icon name="settings" /><span class="sep"></span><Icon set="w" name="minimize" size="w" /><Icon set="w" name="maximize" size="w" /><Icon set="w" name="close" size="w" /></span>
+  </div>
+
+  <div class="body">
+    <!-- 左:Changes -->
+    <aside class="gl">
+      <div class="ph"><span>Changes</span><span><Icon name="list-flat" /></span></div>
+      <div class="filter"><Icon name="search" />Filter files…</div>
+      {groups.map((group) => (
+        <>
+          <div class="sec"><Icon name="chevron-down" size="s" />{group.label}</div>
+          {group.files.map((file) => (
+            <div class:list={['frow', { on: 'on' in file && file.on }]}><span class="cb"></span><FileIcon file={file.name} /><span class="nm">{file.name}</span>{'path' in file && file.path && <span class="pa">{file.path}</span>}<span class:list={['st', file.status === 'M' ? 'm' : 'u']}>{file.status}</span></div>
+          ))}
+        </>
+      ))}
+      <div class="cbox">
+        <div class="lab"><span>Commit message</span><span><span class="cb" style="width:10px;height:10px"></span>Amend</span></div>
+        <div class="ta">Commit message</div>
+        <div class="meta"><span>0 staged</span><span>Ctrl ⏎</span></div>
+        <div class="go">Commit</div>
+      </div>
+    </aside>
+
+    <!-- 中:提交对比 -->
+    <section class="ed">
+      <div class="tabs"><span><FileIcon icon="markdown" /><em>README.md</em></span><span class="on"><Icon name="git-commit" /> Commit b811984f (loog) <span class="x"><Icon name="close" size="s" /></span></span></div>
+      <div class="bar">
+        <span class="l">Commit b811984f <span>· 3 files</span></span>
+        <span class="r"><span class="a">+10</span><span class="d">−10</span><span>1/3</span><span class="ar"><Icon name="arrow-up" size="s" /><Icon name="arrow-down" size="s" /></span><span>Inline</span><span class="seg"><span class="on">Split</span></span><Icon name="copy" size="s" /></span>
+      </div>
+      <div class="diff">
+        {diff.map((file) => (
+          <>
+            <div class="fh"><span class="ch"><Icon name="chevron-down" size="s" /></span>{file.name}<span class="rt"><span class="a">+{file.add}</span><span class="d">−{file.del}</span><span>Open Changes</span><span>Open File</span></span></div>
+            {file.hunks.map((hunk) => (
+              <>
+                <div class="hh">{hunk.header}</div>
+                <div class="split">
+                  <div class="col">
+                    {hunk.left.map((row) => (
+                      <div class:list={['dl', row.kind]}><i>{row.n}</i><Fragment set:html={row.html} /></div>
+                    ))}
+                  </div>
+                  <div class="gut">
+                    {hunk.gutter && (
+                      <svg viewBox={`0 0 40 ${hunk.gutter.height}`} height={hunk.gutter.height} preserveAspectRatio="none"><path d={hunk.gutter.d} fill={hunk.gutter.fill} stroke={hunk.gutter.stroke} stroke-width="1" /></svg>
+                    )}
+                  </div>
+                  <div class="col">
+                    {hunk.right.map((row) => (
+                      <div class:list={['dl', row.kind]}><i>{row.n}</i><Fragment set:html={row.html} /></div>
+                    ))}
+                  </div>
+                </div>
+              </>
+            ))}
+          </>
+        ))}
+      </div>
+    </section>
+
+    <!-- 右:Explorer -->
+    <aside class="gr">
+      <div class="ics"><span class="on"><Icon name="explorer" /></span><Icon name="search" /><Icon name="outline" /></div>
+      {tree.map((entry) => (
+        <div class:list={['tr', { dim: entry.dim, hl: entry.hl }]} style={entry.root ? 'padding-top:8px' : undefined}>
+          {entry.dir ? <FileIcon icon={entry.root ? 'folder-open' : 'folder'} /> : <FileIcon file={entry.name} />}{entry.name}
+        </div>
+      ))}
+    </aside>
+  </div>
+
+  <!-- 底部面板 -->
+  <div class="dock">
+    <div class="dh">
+      <span class="tabs2"><span class="on"><Icon name="panel-terminal" />Terminal</span><span><Icon name="panel-commits" />Commits</span><span><Icon name="panel-output" />Output</span><span><Icon name="panel-problems" />Problems</span></span>
+      <span class="rr"><Icon name="terminal-maximize" /><Icon name="chrome-minimize" /></span>
+    </div>
+    <div class="term">
+      <div><span class="dim">PS C:\loog&gt;</span> cargo run --release</div>
+      <div class="dim">   Compiling loog v0.1.10 (D:\loog)</div>
+      <div class="dim">    Finished release profile [optimized] in 8.4s</div>
+      <div class="dim">     Running target\release\Loog.exe</div>
+      <div><span class="dim">PS C:\loog&gt;</span> <span class="caret"></span></div>
+    </div>
+  </div>
+
+  <!-- 状态栏 -->
+  <div class="status">
+    <span><span><Icon name="error" size="s" />0</span><span><Icon name="warning" size="s" />0</span><span><Icon name="info" size="s" />0</span></span>
+    <span><span>Text Diff</span><span>TXT</span></span>
+  </div>
+</div>

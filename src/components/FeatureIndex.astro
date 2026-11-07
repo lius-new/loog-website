@@ -1,0 +1,29 @@
+---
+// 功能索引(点线引导的目录)+ 桌面端的大号链接。
+// 鼠标悬停某一功能,右侧窗口里对应区域会亮起(见 scripts/interactions.ts 与 styles/hero.css)。
+import { coreFeatures, everydayFeatures, links } from '../data/site';
+---
+
+<div class="catalog">
+  <div class="feats">
+    <div class="rule f-top" aria-hidden="true"></div>
+    <div class="ix ix-first">
+      {coreFeatures.map((feature) => (
+        <div class="r" data-hl={feature.hl} tabindex="0"><span class="n">{feature.name}</span><i class="l"></i><span class="m">{feature.hint}</span></div>
+      ))}
+    </div>
+    <div class="hair c-s" aria-hidden="true"></div>
+    <div class="ix ix-g2">
+      {everydayFeatures.map((feature) => (
+        <div class="r" data-hl={feature.hl} tabindex="0"><span class="n">{feature.name}</span><i class="l"></i><span class="m">{feature.hint}</span></div>
+      ))}
+    </div>
+    <div class="rule flip f-bot" aria-hidden="true"></div>
+  </div>
+
+  <div class="ix big">
+    {links.map((link) => (
+      <a class="r" data-key={link.key} href={link.href} target="_blank" rel="noopener"><span class="n">{link.title}</span><i class="l"></i><span class="m">{link.hint}</span></a>
+    ))}
+  </div>
+</div>

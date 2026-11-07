@@ -1,0 +1,41 @@
+---
+// 页面外壳:<head>、自托管字体、全局样式、图标精灵图。
+import '@fontsource-variable/bricolage-grotesque/opsz.css';
+import '@fontsource-variable/geist-mono/index.css';
+import '../styles/tokens.css';
+import '../styles/base.css';
+import '../styles/hero.css';
+import '../styles/window.css';
+import '../styles/responsive.css'; // 必须最后:覆盖前面的桌面样式
+
+import Sprite from '../components/Sprite.astro';
+import { SITE } from '../data/site';
+
+interface Props {
+  title?: string;
+  description?: string;
+}
+const { title = `${SITE.name} — ${SITE.subtitle}`, description = SITE.description } = Astro.props;
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{title}</title>
+    <meta name="description" content={description} />
+    <meta name="theme-color" content="#1c1a17" />
+    <meta name="generator" content={Astro.generator} />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <link rel="icon" href="/favicon.ico" sizes="any" />
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content={SITE.name} />
+    <meta property="og:title" content={title} />
+    <meta property="og:description" content={description} />
+  </head>
+  <body>
+    <Sprite />
+    <slot />
+  </body>
+</html>

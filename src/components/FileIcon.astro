@@ -1,0 +1,14 @@
+---
+// 文件 / 文件夹图标:来自应用使用的 Material 图标主题。
+import { fileIconFor, type FileIconName } from '../data/mock';
+
+interface Props {
+  /** 直接指定图标,或给出文件名由 fileIconFor 推断 */
+  icon?: FileIconName;
+  file?: string;
+}
+const { icon, file } = Astro.props;
+const name = icon ?? fileIconFor(file ?? '');
+---
+
+<svg class="fic" aria-hidden="true"><use href={`#m-${name}`} /></svg>

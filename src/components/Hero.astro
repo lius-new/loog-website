@@ -1,0 +1,22 @@
+---
+// 首屏:点阵画布在最底层(scripts/dots.ts 绘制),舞台在上,舞台里左栏 + 编辑器窗口。
+import Intro from './Intro.astro';
+import QuickLinks from './QuickLinks.astro';
+import FeatureIndex from './FeatureIndex.astro';
+import AppWindow from './AppWindow.astro';
+import { SITE } from '../data/site';
+---
+
+<div class="hero" id="hero">
+  <h1 class="sr">{SITE.name}</h1>
+  <canvas id="field" aria-hidden="true"></canvas>
+
+  <div class="stage" id="stage">
+    <div class="info">
+      <Intro />
+      <QuickLinks />
+      <FeatureIndex />
+    </div>
+    <AppWindow />
+  </div>
+</div>

@@ -1,0 +1,13 @@
+---
+// 界面图标:引用 Sprite.astro 里的 <symbol>。
+//   set="i"  VS Code / Lucide 图标(默认),与应用同源
+//   set="w"  窗口按钮(最小化、最大化、关闭)
+interface Props {
+  name: string;
+  size?: 's' | 'w';
+  set?: 'i' | 'w';
+}
+const { name, size, set = 'i' } = Astro.props;
+---
+
+<svg class:list={['ic', size]} aria-hidden="true"><use href={`#${set}-${name}`} /></svg>

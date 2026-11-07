@@ -1,0 +1,244 @@
+/* 首屏版面:点阵画布 + 舞台(左栏 + 编辑器窗口) */
+
+.hero {
+  position: relative;
+  /* 窗口至少 600px 高;视口太矮时首屏略微下延,不压缩窗口 */
+  min-height: max(100svh, calc(var(--wm-bottom) + 16px + 600px + 40px));
+  overflow: hidden;
+}
+
+#field {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1;
+}
+
+/* 居中的内容舞台,最宽 1240px;点阵波带仍在两侧铺满全宽 */
+.stage {
+  position: absolute;
+  z-index: 3;
+  top: 0;
+  bottom: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(calc(100% - 2 * var(--pad)), 1240px);
+}
+
+/* ---------- 左栏:上下边与右侧窗口对齐 ---------- */
+.info {
+  position: absolute;
+  z-index: 3;
+  left: 0;
+  width: min(36%, 470px);
+  top: calc(var(--wm-bottom) + 16px);
+  bottom: clamp(20px, 4svh, 40px);
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  container-type: size; /* 内部尺寸用 cqh,随栏高缩放 */
+}
+
+.info .top {
+  flex: none;
+}
+
+.info h2 {
+  margin-top: -0.08em;
+  font-size: clamp(30px, 3.6vw, 56px);
+  line-height: 1.02;
+  letter-spacing: -0.03em;
+  font-weight: 700;
+  font-variation-settings: 'opsz' 96;
+}
+
+.info .sub {
+  margin-top: 14px;
+  font-size: clamp(16px, 1.4vw, 19px);
+  color: var(--muted);
+  font-weight: 500;
+}
+
+.cta {
+  margin-top: 22px;
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  height: 52px;
+  padding: 0 28px;
+  border-radius: 999px;
+  background: var(--thread);
+  color: var(--ink);
+  font-weight: 700;
+  font-size: 17px;
+  transition: transform 0.15s ease, background 0.15s ease;
+}
+.btn:hover {
+  background: #ff8aa0;
+  transform: translateY(-1px);
+}
+.btn .for {
+  margin-left: 0.28em;
+}
+
+.fine {
+  font-size: 14px;
+  color: var(--muted);
+}
+
+/* 手机端的横向链接行(桌面隐藏,见 responsive.css) */
+.quick {
+  display: none;
+}
+
+/* ---------- 目录:功能索引 + 大号链接 ---------- */
+.catalog {
+  display: flex;
+  flex: 1;
+  flex-direction: column;
+  justify-content: space-between;
+  margin-top: 18px;
+  min-height: 0;
+}
+
+.feats {
+  display: flex;
+  flex-direction: column;
+}
+
+/* 刻度尺分隔线:只用奶油白,右端渐隐。上下各一条,刻度朝向组内 */
+.rule {
+  flex: none;
+  height: 10px;
+  opacity: 0.9;
+  background:
+    linear-gradient(rgba(255, 244, 234, 0.28), rgba(255, 244, 234, 0.28)) 0 0 / 100% 1px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 244, 234, 0.3) 0 1px, transparent 1px 8px) 0 0 / 100% 4px no-repeat,
+    repeating-linear-gradient(90deg, rgba(255, 244, 234, 0.5) 0 1px, transparent 1px 40px) 0 0 / 100% 9px no-repeat;
+  -webkit-mask-image: linear-gradient(90deg, #000 55%, transparent);
+  mask-image: linear-gradient(90deg, #000 55%, transparent);
+}
+.rule.flip {
+  transform: scaleY(-1);
+}
+.catalog .rule {
+  margin: clamp(10px, 1.7cqh, 24px) 0;
+}
+
+/* 两组功能之间的细发丝线 */
+.hair {
+  flex: none;
+  height: 1px;
+  background: rgba(255, 244, 234, 0.14);
+  margin: clamp(8px, 1.4cqh, 18px) 0;
+}
+
+/* 点线引导的目录行:名称 ···· 提示 */
+.ix .r {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  padding: clamp(4px, 0.8cqh, 12px) 0;
+  outline: none;
+  cursor: default;
+}
+.ix .n {
+  font-size: clamp(15px, 1.7cqh, 19px);
+  font-weight: 600;
+  letter-spacing: -0.01em;
+}
+.ix .m {
+  font: 500 12.5px var(--mono);
+  color: var(--muted);
+}
+.ix .l {
+  flex: 1;
+  align-self: center;
+  height: 6px;
+  background: radial-gradient(circle at 50% 50%, rgba(255, 244, 234, 0.42) 1.2px, transparent 1.7px) 0 50% / 9px 6px repeat-x;
+}
+.ix .r:hover .l,
+.ix .r[data-hl]:focus-visible .l {
+  background-image: radial-gradient(circle at 50% 50%, var(--thread) 1.5px, transparent 2px);
+  animation: flow 0.5s linear infinite;
+}
+.ix .r:hover .n,
+.ix .r[data-hl]:focus-visible .n {
+  color: var(--thread);
+}
+@keyframes flow {
+  to {
+    background-position: 9px 50%;
+  }
+}
+
+.ix-g2 .n {
+  font-weight: 500;
+  color: rgba(255, 244, 234, 0.86);
+}
+
+/* 底部三条大号链接 */
+.ix.big .r {
+  padding: clamp(7px, 1.3cqh, 18px) 0;
+  cursor: pointer;
+}
+.ix.big .n {
+  font-size: clamp(24px, 3.1cqh, 36px);
+  font-weight: 700;
+  letter-spacing: -0.025em;
+}
+.ix.big a.r {
+  transition: transform 0.15s;
+}
+.ix.big a.r:hover {
+  transform: translateX(6px);
+}
+
+/* 栏高不够时依次收起:先日常功能,最后才收起核心特性 */
+@container (max-height: 760px) {
+  .ix-g2 .r:nth-child(n + 4) {
+    display: none;
+  }
+}
+@container (max-height: 640px) {
+  .ix-g2,
+  .c-s {
+    display: none;
+  }
+}
+@container (max-height: 470px) {
+  .feats {
+    display: none;
+  }
+}
+
+/* ---------- 悬停某个功能,右侧窗口里对应区域亮起(data-hl 由 scripts/interactions.ts 写在 .hero 上) ---------- */
+.hero[data-hl='git'] .gl,
+.hero[data-hl='terminal'] .dock,
+.hero[data-hl='highlighting'] .diff,
+.hero[data-hl='diagnostics'] .status,
+.hero[data-hl='encodings'] .status,
+.hero[data-hl='markdown'] .tabs > span:first-child,
+.hero[data-hl='sessions'] .tabs,
+.hero[data-hl='extensions'] .chrome .ctl {
+  outline: 2px solid var(--thread);
+  outline-offset: -2px;
+  background-image: linear-gradient(rgba(255, 117, 143, 0.14), rgba(255, 117, 143, 0.14));
+}
+.hero[data-hl='native'] .win {
+  box-shadow: 0 0 0 2px var(--thread), 0 0 90px -10px rgba(255, 117, 143, 0.6), 0 40px 120px -20px rgba(0, 0, 0, 0.7);
+}
+.hero[data-hl='extensions'] .chrome .ctl .ic:nth-of-type(4) {
+  color: var(--thread);
+  transform: scale(1.3);
+}
+.hero[data-hl='diagnostics'] .dock .tabs2 span:nth-child(4) {
+  color: var(--thread);
+}
