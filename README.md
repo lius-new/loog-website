@@ -1,116 +1,89 @@
-# Loog website
+<p align="center">
+  <img src="public/favicon.svg" alt="Loog" width="96" height="96">
+</p>
 
-The official website for [Loog](https://github.com/lius-new/loog), a fast, minimal code editor written in Rust.
+<h1 align="center">Loog</h1>
 
-A static [Astro](https://astro.build) site with no UI framework. The first screen is the whole design for now:
-a dot-matrix wordmark that is laid down in three passes, a mock of the Loog window, and a left column that
-doubles as a feature index. Hovering a feature lights up the matching part of the window.
+<p align="center">
+  <strong>A fast, minimal code editor with an integrated terminal and Git, written in Rust.</strong>
+</p>
 
-## Commands
+<p align="center">
+  <a href="https://github.com/lius-new/loog/releases/latest">Download</a> ·
+  <a href="https://github.com/lius-new/loog/tree/main/docs">Documentation</a> ·
+  <a href="https://github.com/lius-new/loog/blob/main/docs/extensions-roadmap.md">Extensions</a> ·
+  <a href="https://github.com/lius-new/loog">GitHub</a>
+</p>
 
-| Command             | What it does                                         |
-| ------------------- | ---------------------------------------------------- |
-| `pnpm install`      | Install dependencies                                 |
-| `pnpm dev`          | Dev server at `localhost:4321`                       |
-| `pnpm build`        | Build the static site to `dist/`                     |
-| `pnpm preview`      | Serve `dist/` locally                                |
-| `pnpm typecheck`    | `tsc --noEmit` over the TypeScript in `src/scripts` and `src/data` |
+Loog is a desktop editor for Windows, macOS and Linux. It stays small and responsive while covering the
+daily loop of editing, searching, running commands and working with Git, without leaving the window.
 
-Node 22.23.4 or newer is required (see `engines`).
+> [!NOTE]
+> Loog is in early development (version 0.1). Expect rough edges, and expect settings and behavior to
+> change between releases.
 
-> `.astro` templates are not covered by `typecheck`; their syntax errors surface in `pnpm build`.
-> `@astrojs/check` is not installed: at the time of writing its WASM runtime pulls in mismatched
-> `@emnapi/runtime` versions and crashes on start.
+## What you get
 
-## Layout
+- **Native and fast.** A real desktop app built in Rust and rendered with Skia, not a web view.
+- **Editing that handles every script.** Grapheme-aware text (CJK, combining marks, emoji), IME input,
+  multiple cursors, rectangular selections, soft wrap, code folding, split panes and an optional Vim mode.
+- **Languages.** Tree-sitter syntax highlighting, and language servers for completion, hover, signature help,
+  definitions, references, rename, formatting, diagnostics and code actions.
+- **Text encodings.** UTF-8, UTF-16, GBK, GB18030, Big5, Shift_JIS and more, detected automatically. Saves preserve
+  the selected encoding, BOM and LF/CRLF line endings.
+- **Terminal built in.** PowerShell, Command Prompt, Git Bash, bash, zsh, fish or any custom shell, in tabs
+  and splits that follow your working directory.
+- **Git built in.** Staging, commits, fetch, pull and push, branches, tags, stashes, history, diffs and
+  worktrees, refreshed in the background across every repository in the workspace.
+- **Markdown.** Live reading and side-by-side previews, even for unsaved files.
+- **Search.** Search every folder with case, whole-word, regex and include/exclude globs; it respects
+  `.gitignore` and searches unsaved buffers.
+- **Sessions.** Tabs, pane layout, source positions and terminal directories come back after a restart.
+- **Extensions.** WebAssembly extensions add commands, diagnostics, themes, snippets and language packs.
+- **Yours to shape.** Light, dark and high-contrast themes, a `keymap.json` with contexts and key sequences,
+  per-project settings, interface scaling from 80% to 200%, and independent editor and terminal fonts.
 
-```
-src/
-  pages/index.astro        the page: Hero + script wiring
-  layouts/Base.astro       <head>, self-hosted fonts, global styles, icon sprite
-  components/
-    Hero.astro             canvas + stage; assembles the pieces below
-    Intro.astro            tagline, subtitle, Download button
-    FeatureIndex.astro     feature index + large links (desktop)
-    QuickLinks.astro       GitHub / Extensions / Docs row (mobile)
-    AppWindow.astro        the mock Loog window (decorative, aria-hidden)
-    Icon.astro, FileIcon.astro, Sprite.astro
-  data/
-    site.ts                name, tagline, URLs, features, links: the single source of copy
-    mock.ts                file lists shown inside the mock window
-    diff.ts                the commit diff shown inside the mock window
-  scripts/
-    dots.ts                the dot-matrix canvas and its intro animation
-    interactions.ts        hover-to-highlight sync, G / E / D shortcuts
-    window-scale.ts        scales the mock window to fit phones
-  styles/
-    tokens.css  base.css  hero.css  window.css  responsive.css   (imported in this order)
-  assets/sprite.svg        icon sprite
-public/                    favicon (the Loog icon)
-```
+## Download
 
-To change copy or links, edit `src/data/site.ts`; the left column, the mobile link row and the keyboard
-shortcuts are all generated from it.
+Get the latest build from the [Releases](https://github.com/lius-new/loog/releases/latest) page.
 
-## Design notes
+| Platform | Packages |
+| --- | --- |
+| Windows x64 | Per-user installer (no admin rights needed) or portable `.zip` |
+| macOS 11+ (Apple Silicon and Intel) | Universal `.dmg` or `.zip` |
+| Linux x64 | `.deb`, `.AppImage` or `.tar.gz` |
 
-- **Palette** comes from the app icon: warm black `#1c1a17`, cream `#fff4ea`, and the pink thread `#ff758f`.
-  Pink is reserved for the wordmark's thread, the download button and hover/active states.
-- **Dot field** (`dots.ts`). The wordmark is rendered to an offscreen canvas, sampled onto a dot grid, and
-  crossed by a sine-shaped band. The intro runs in three passes: base dots, wordmark, then the pink band.
-  On phones (`<= 900px`) the wordmark sits at the top and all three passes run top to bottom.
-- **No layout shift while loading.** Where the window and left column sit depends on the wordmark's
-  height. That height (`--wm-bottom`) is computed in plain CSS from viewport units and a measured
-  constant, `--wm-em` (the width of "Loog" in em), so the first paint is already correct and nothing
-  waits for fonts or scripts. `dots.ts` reads the same constant to draw the wordmark. **If you change the
-  wordmark's font, weight or letter-spacing, re-measure `--wm-em`** (`measureText('Loog').width / 100` on a
-  canvas with the font set to `800 100px` and `letterSpacing = '-0.03em'`), otherwise the layout will
-  drift from the drawing. The two main fonts are preloaded in `Base.astro` for the same reason.
-- **Responsive**. Below 900px the left column and window are re-ordered with `display: contents` + `order`
-  (see `responsive.css`). The window keeps its full three-panel layout at a 760px design width and is
-  shrunk with `zoom`, so no content is dropped.
-- **Fonts** are self-hosted from `@fontsource-variable` (Bricolage Grotesque with its optical-size axis, and
-  Geist Mono) instead of Google Fonts, so the site works where Google is unreachable.
-- **Container queries**. The left column is a size container; row sizes use `cqh` so they scale with the
-  window next to it, and lower-priority groups fold away when the column gets short.
-- **Reduced motion**: the intro is skipped and the caret stops blinking.
+Every release ships a `SHA256SUMS` file for each platform. A few things to know:
 
-### Debug parameters
+- **Windows:** the packages are not code-signed yet, so SmartScreen warns on first run. A Git runtime is included.
+- **macOS:** the app is not notarized yet, so Gatekeeper blocks the first launch. Control-click Loog.app and
+  choose **Open**. Loog uses the system `git`.
+- **Linux:** needs glibc 2.39 or newer (for example Ubuntu 24.04 or Fedora 40) and an X11 or Wayland session.
+  Loog uses the system `git`.
 
-| Query     | Effect                                           |
-| --------- | ------------------------------------------------ |
-| `?static` | Skip the intro animation                         |
-| `?t=1.2`  | Freeze the intro at 1.2 seconds (useful for screenshots) |
+Open a folder or file from a terminal with `loog .` or `loog path/to/file`. Packaged builds check for new
+releases and can update themselves, depending on how Loog was installed.
 
-### Working in `.astro` templates
+## Learn more
 
-- Curly braces in text are expressions. The mock diff contains Rust code, so it lives in `src/data/diff.ts`
-  and is rendered with `<Fragment set:html>`; do not paste code into templates.
-- `.dl` (a diff row) uses `white-space: pre`. Keep each row on one line in the template, with no
-  whitespace between `<i>` and the code.
+- [Editing](https://github.com/lius-new/loog/blob/main/docs/editing.md): files, sessions, multiple cursors, folding, soft wrap and Vim
+- [Languages](https://github.com/lius-new/loog/blob/main/docs/languages.md): syntax packages and language servers
+- [Text file encodings](https://github.com/lius-new/loog/blob/main/docs/encoding.md): detection, switching and saving
+- [Markdown reading](https://github.com/lius-new/loog/blob/main/docs/markdown.md): reading mode and live previews
+- [Workspace search](https://github.com/lius-new/loog/blob/main/docs/search.md)
+- [Terminal](https://github.com/lius-new/loog/blob/main/docs/terminal.md): shells, WSL and working directories
+- [Git](https://github.com/lius-new/loog/blob/main/docs/git.md): source control, diffs, history and worktrees
+- [Settings and key bindings](https://github.com/lius-new/loog/blob/main/docs/settings.md)
+- [Extensions](https://github.com/lius-new/loog/blob/main/docs/extensions-roadmap.md): what works today and what is next
+- [Updates](https://github.com/lius-new/loog/blob/main/docs/updates.md)
 
-## Icons
+Found a bug or have an idea? [Open an issue](https://github.com/lius-new/loog/issues).
 
-`src/assets/sprite.svg` holds every icon as a `<symbol>`; they are used through `Icon.astro` and
-`FileIcon.astro`. They are the same icons the Loog app uses, so the mock window matches the real UI:
+## License
 
-| Prefix | Source                                                                   |
-| ------ | ------------------------------------------------------------------------ |
-| `i-`   | VS Code Codicons (`Vs*`) and Lucide (`Lu*`) via the `icondata` crates     |
-| `m-`   | Material Icon Theme file and folder icons (`loog/assets/icon-themes/material`) |
-| `w-`   | Window buttons (`loog/assets/icons`)                                      |
+Loog is licensed under either of the Apache License, Version 2.0 or the MIT license, at your option. See the
+[Loog repository](https://github.com/lius-new/loog) for the full texts.
 
-The sprite was extracted from the original HTML prototype; there is no generator script yet.
+---
 
-**Licences still to be surfaced on the site.** Verified: the `icondata_vs` / `icondata_lu` crates are MIT,
-and Material Icon Theme is MIT (Copyright (c) 2025 Material Extensions). Not yet verified here: the licences of
-the underlying Codicons and Lucide sets (Codicons are, to my knowledge, CC BY 4.0, which requires attribution;
-Lucide is ISC). Check upstream and add the notices before launch.
-
-## Status
-
-- The first screen is complete on desktop, tablet and phone widths.
-- The Download button links to the latest GitHub release. It always reads "Download for Windows": OS
-  detection and per-platform links are not implemented yet.
-- No licence has been chosen for this repository.
-- No deployment is configured (`astro.config.mjs` has no `site`).
+Working on this website's source? See [docs/development.md](docs/development.md).
