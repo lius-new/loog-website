@@ -3,12 +3,10 @@
 // 数据在构建时来自官方扩展仓库的签名索引(src/data/extensions.ts)。
 import ExtLayout from '../../layouts/ExtLayout.astro';
 import { EXTENSIONS, URLS } from '../../data/site';
-import { KINDS, extensionPath, getExtensions, tagsOf, type Extension } from '../../data/extensions';
+import { extensionPath, getExtensions, sectionsOf, tagsOf, type Extension } from '../../data/extensions';
 
 const all = await getExtensions();
-const sections = KINDS.map((k, i) => ({ ...k, number: String(i + 1).padStart(2, '0'), items: all.filter((e) => e.kind === k.kind) })).filter(
-  (s) => s.items.length,
-);
+const sections = sectionsOf(all); // 有扩展的类型都有分区;新类型自动出现
 const languageCount = all.filter((e) => e.kind === 'lang').length;
 
 // 搜索用的小写文本:标识符、名称、文件类型或语言、关键词

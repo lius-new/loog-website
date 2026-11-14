@@ -1,0 +1,41 @@
+name: Refresh extensions
+
+# The extensions pages are built from the extension repository's signed index, so they only change
+# when the site is rebuilt. The extension repository triggers a rebuild itself when it publishes
+# (see docs/development.md); this workflow is the safety net: every few hours it compares the index
+# version the live site was built from with the latest one, and asks Cloudflare for a rebuild when
+# they differ. When nothing changed it does nothing.
+#
+# GitHub turns scheduled workflows off after 60 days without any activity in the repository. If that
+# happens, run this workflow once by hand (Actions > Refresh extensions > Run workflow) to turn it back on.
+on:
+  schedule:
+    - cron: '23 */6 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  refresh:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Compare the live site with the latest index
+        env:
+          DEPLOY_HOOK_URL: ${{ secrets.CLOUDFLARE_DEPLOY_HOOK }}
+        run: |
+          set -euo pipefail
+          latest=$(curl -fsSL --retry 3 https://github.com/lius-new/loog-extensions/releases/download/registry/index.json | jq -r '.sequence')
+          # If the live site has no index-info.json yet (first deploy of this feature), treat it as out of date.
+          live=$(curl -fsSL --retry 3 https://loog.dev/extensions/index-info.json | jq -r '.sequence' || echo none)
+          echo "latest index: $latest, live site was built from: $live"
+          if [ "$latest" = "$live" ]; then
+            echo "Up to date."
+            exit 0
+          fi
+          if [ -z "$DEPLOY_HOOK_URL" ]; then
+            echo "::error::The site is out of date but the CLOUDFLARE_DEPLOY_HOOK secret is not set."
+            exit 1
+          fi
+          curl -fsS --retry 3 -X POST "$DEPLOY_HOOK_URL"
+          echo
+          echo "Rebuild requested."

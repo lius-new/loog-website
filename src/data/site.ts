@@ -38,8 +38,8 @@ export const EXTENSIONS = {
   /** 列表页的标题、摘要和头部说明(数量在页面里按实际数据填) */
   listTitle: 'Extensions for Loog — Languages, Language Services, Themes',
   listDescription: (count: number, languages: number) =>
-    `Browse ${count} official Loog extensions: syntax highlighting for ${languages} languages, language servers, themes and runtimes.`,
-  listIntro: 'extensions: languages, language services, themes and runtimes.',
+    `Browse ${count} official Loog extensions: syntax highlighting for ${languages} languages, language servers, themes and more.`,
+  listIntro: 'official extensions: languages, language services, themes and more.',
   searchPlaceholder: 'Search name or file type',
   detailDescription: (name: string, summary: string) =>
     `${summary} Install the ${name} extension in Loog, the fast, open-source code editor.`,

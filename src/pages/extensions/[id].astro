@@ -4,7 +4,7 @@
 import type { GetStaticPaths } from 'astro';
 import ExtLayout from '../../layouts/ExtLayout.astro';
 import { EXTENSIONS, URLS } from '../../data/site';
-import { contributionsOf, extensionPath, getExtensions, type Extension } from '../../data/extensions';
+import { contributionsOf, extensionPath, getExtensions, kindLabel, type Extension } from '../../data/extensions';
 
 export const getStaticPaths = (async () => {
   const all = await getExtensions();
@@ -24,7 +24,6 @@ const tabs = [
 ];
 
 const everyPlatform = ext.platforms.length === 1 && ext.platforms[0].platform === 'any';
-const kinds: Record<string, string> = { lsp: 'Language service', theme: 'Theme', runtime: 'Runtime', lang: 'Syntax highlighting' };
 ---
 
 <ExtLayout
@@ -113,7 +112,7 @@ const kinds: Record<string, string> = { lsp: 'Language service', theme: 'Theme',
           <h2>More information</h2>
           <dl>
             <dt>Identifier</dt><dd>{ext.id}</dd>
-            <dt>Type</dt><dd>{kinds[ext.kind]}</dd>
+            <dt>Type</dt><dd>{kindLabel(ext.kind)}</dd>
             <dt>Version</dt><dd>{ext.version}</dd>
             <dt>Publisher</dt><dd>{ext.publisher}</dd>
             <dt>License</dt><dd>{ext.license}</dd>

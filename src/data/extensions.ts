@@ -12,15 +12,41 @@ import { marked } from 'marked';
 import sanitizeHtml from 'sanitize-html';
 import { EXTENSIONS } from './site';
 
-export type Kind = 'lsp' | 'theme' | 'runtime' | 'lang';
+/** 扩展类型:扩展 id 的第二段,如 loog.remote.ssh 的 remote。扩展仓库新增类型时不需要改这里,见下面的 KINDS。 */
+export type Kind = string;
 
-/** 页面上分区的顺序和名称 */
-export const KINDS: { kind: Kind; title: string; singular: string; blurb: string }[] = [
-  { kind: 'lsp', title: 'Language services', singular: 'Service', blurb: 'Diagnostics, completion and navigation, powered by a language server.' },
-  { kind: 'theme', title: 'Themes', singular: 'Theme', blurb: 'Color themes for the editor and the terminal.' },
-  { kind: 'runtime', title: 'Runtimes', singular: 'Runtime', blurb: 'Interpreters that other extensions run on.' },
-  { kind: 'lang', title: 'Languages', singular: 'Syntax', blurb: 'Syntax highlighting built on Tree-sitter grammars.' },
+interface KindInfo {
+  kind: Kind;
+  /** 列表页分区标题 */
+  title: string;
+  /** 详情页 Type 一行的写法 */
+  label: string;
+}
+
+/**
+ * 已知类型的名称和顺序。**不是必需的**:扩展仓库出现不在这里的新类型时,页面会自动给它一个分区,
+ * 名称由类型名推出("debug" 显示成 "Debug"),排在已知分区后面,不会丢扩展,也不用改代码。
+ * 想给新类型更好的名称或排到前面时,才在这里加一项。
+ */
+export const KINDS: KindInfo[] = [
+  { kind: 'lsp', title: 'Language services', label: 'Language service' },
+  { kind: 'theme', title: 'Themes', label: 'Theme' },
+  { kind: 'runtime', title: 'Runtimes', label: 'Runtime' },
+  { kind: 'remote', title: 'Remote', label: 'Remote workspace' },
+  { kind: 'lang', title: 'Languages', label: 'Syntax highlighting' },
 ];
+
+const titleCase = (s: string) => s.charAt(0).toUpperCase() + s.slice(1);
+const kindInfo = (kind: Kind): KindInfo => KINDS.find((k) => k.kind === kind) ?? { kind, title: titleCase(kind), label: titleCase(kind) };
+
+/** 详情页 Type 一行 */
+export const kindLabel = (kind: Kind): string => kindInfo(kind).label;
+
+/** 排序:已知类型按 KINDS 的顺序,未知类型排在后面、按名称排 */
+const rankOf = (kind: Kind): number => {
+  const i = KINDS.findIndex((k) => k.kind === kind);
+  return i === -1 ? KINDS.length : i;
+};
 
 export interface Platform {
   platform: string;
@@ -149,10 +175,7 @@ function iconUrl(icon: RawExtension['icon']): string | null {
 }
 
 const SUFFIX = / (Language Server|Language|Themes|Runtime)$/;
-const kindOf = (id: string): Kind | null => {
-  const part = id.split('.')[1];
-  return part === 'lsp' || part === 'theme' || part === 'runtime' || part === 'lang' ? part : null;
-};
+const kindOf = (id: string): Kind | null => id.split('.')[1] || null;
 
 function toExtension(raw: RawExtension, kind: Kind): Extension {
   const v = raw.versions[0]; // 索引里版本按新到旧排列
@@ -181,6 +204,14 @@ function toExtension(raw: RawExtension, kind: Kind): Extension {
   };
 }
 
+/** 这次构建用的索引是哪一版。公布在 /extensions/index-info.json,用来和最新的索引比较,判断网站是不是旧了。 */
+export interface IndexInfo {
+  sequence: number;
+  generated: string;
+  count: number;
+}
+let info: IndexInfo | null = null;
+
 let cached: Promise<Extension[]> | null = null;
 
 /** 全部 loog.* 扩展,按分区顺序、再按名称排好。同一次构建里只下载一次。 */
@@ -195,16 +226,36 @@ export function getExtensions(): Promise<Extension[]> {
     // 索引里还有改名前遗留的 loom.* 重复条目,不展示
     const list: Extension[] = [];
     for (const raw of index.extensions) {
+      if (!raw.id.startsWith('loog.') || !raw.versions?.length) continue;
       const kind = kindOf(raw.id);
-      if (!raw.id.startsWith('loog.') || !kind || !raw.versions?.length) continue;
-      list.push(toExtension(raw, kind));
+      if (kind) list.push(toExtension(raw, kind));
     }
-    const rank = new Map(KINDS.map((k, i) => [k.kind, i]));
-    list.sort((a, b) => (rank.get(a.kind) ?? 0) - (rank.get(b.kind) ?? 0) || a.short.localeCompare(b.short));
+    list.sort((a, b) => rankOf(a.kind) - rankOf(b.kind) || a.kind.localeCompare(b.kind) || a.short.localeCompare(b.short));
+    const custom = [...new Set(list.map((e) => e.kind))].filter((k) => !KINDS.some((known) => known.kind === k));
+    if (custom.length) console.log(`[extensions] Types without a name in KINDS (shown with default names): ${custom.join(', ')}`);
+    info = { sequence: index.sequence, generated: index.generated, count: list.length };
     console.log(`[extensions] ${list.length} extensions from index #${index.sequence} (signature verified)`);
     return list;
   })();
   return cached;
+}
+
+export async function getIndexInfo(): Promise<IndexInfo> {
+  await getExtensions();
+  if (!info) throw new Error('The extension index was not loaded');
+  return info;
+}
+
+/** 列表页的分区:有扩展的类型,已知的按 KINDS 的顺序,未知的排在后面。number 是 "01"、"02" 这样的编号。 */
+export interface Section {
+  kind: Kind;
+  title: string;
+  number: string;
+  items: Extension[];
+}
+export function sectionsOf(all: Extension[]): Section[] {
+  const kinds = [...new Set(all.map((e) => e.kind))]; // all 已经排好序,所以 kinds 也是排好的
+  return kinds.map((kind, i) => ({ kind, title: kindInfo(kind).title, number: String(i + 1).padStart(2, '0'), items: all.filter((e) => e.kind === kind) }));
 }
 
 /** 语言高亮用到的文件类型或语言服务服务的语言,列表里当标签显示 */

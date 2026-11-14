@@ -116,9 +116,19 @@ Changelog, and a side panel with the identifier, version, licence, permissions a
   the `loog.*` entries. The index also holds old `loom.*` duplicates from before the rename; they are skipped.
   A failed download or a bad signature **fails the build**: the site is not published with unverified data. An
   expired index only logs a warning.
-- **The pages only change when the site is rebuilt.** Nothing here watches the extension repository. After new
-  extensions are published, rebuild the site (a push to `main`, or a Cloudflare deploy hook called from the
-  extension repository's publish workflow; the hook is not set up yet).
+- **The pages only change when the site is rebuilt, and a rebuild is triggered automatically.** The extension
+  repository's publish workflow calls a Cloudflare **deploy hook** after it publishes
+  (`POST https://api.cloudflare.com/client/v4/workers/builds/deploy_hooks/<id>`, no authentication: the URL is the
+  secret). As a safety net, `.github/workflows/refresh-extensions.yml` runs every six hours, compares the index
+  version the live site was built from (`/extensions/index-info.json`) with the latest one, and calls the same
+  hook when they differ. Setup, once: create the hook in the Cloudflare dashboard (Worker > Settings > Builds >
+  Deploy Hooks, branch `main`) and store its URL as the secret `CLOUDFLARE_DEPLOY_HOOK` in this repository and
+  `LOOG_WEBSITE_DEPLOY_HOOK` in the extension repository (which also needs the small change to its publish
+  workflow). If the hook is ever deleted, rebuild by pushing a commit or with Retry deployment.
+- **New extensions, new versions and new types need no code change.** An extension type the site has not seen
+  (the second part of the id, like `remote` in `loog.remote.ssh`) gets a section of its own, named from the type
+  (`debug` shows as "Debug") and placed after the known ones. Add it to `KINDS` in `src/data/extensions.ts`
+  only to give it a better name or an earlier place. The build log says which types are using default names.
 - **README and changelog** are Markdown from the index, rendered with `marked` and cleaned with `sanitize-html`
   (a short list of tags, no images, only absolute `http(s)` and `mailto:` links; relative links become plain text).
 - **Install** is a `loog://extensions/install?id=<id>` link (`EXTENSIONS.installUrl`). The path is a proposal that
